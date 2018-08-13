@@ -1,2 +1,10 @@
-# truetype
-display truetype font for Arduino
+# display truetype font for Arduino  
+It is based on the code by garretlab and changed.  
+https://github.com/garretlab/truetype  
+https://garretlab.web.fc2.com/arduino/lab/esp32_truetype  
+
+--------------------------------------
+# Originality  
+I divided the reading of the font and the display on the screen. Which allows expansion to various displays.  
+In the original, an error occurred except for the font file verified by the author, so we made a correction.  
+Also, in the original, it corresponds to the second-order Bezier curve, and an error occurs depending on the font file. Therefore, this code incorporates a provisional solution to higher-order Bezier curve.  
