@@ -3,6 +3,9 @@ It is based on the code by garretlab and changed.
 https://github.com/garretlab/truetype  
 https://garretlab.web.fc2.com/arduino/lab/esp32_truetype  
 
+TrueType™ Reference Manual  
+https://developer.apple.com/fonts/TrueType-Reference-Manual/  
+
 --------------------------------------
 # Originality  
 I divided the reading of the font and the display on the screen. Which allows expansion to various displays.  
