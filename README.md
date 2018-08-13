@@ -10,5 +10,9 @@ In the original, an error occurred except for the font file verified by the auth
 Also, in the original, it corresponds to the second-order Bezier curve, and an error occurs depending on the font file. Therefore, this code incorporates a provisional solution to higher-order Bezier curve.  
 
 --------------------------------------
+# Future work
+- Correction that some files can not be read  
+
+--------------------------------------
 # Display  
 - ILI9341 https://github.com/k-omura/ILI9341_ttf  
