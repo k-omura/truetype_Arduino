@@ -1,4 +1,6 @@
 # display truetype font for Arduino  
+Read truetype(.ttf) from SD and generate bitmap.
+
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
 
