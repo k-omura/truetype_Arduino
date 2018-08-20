@@ -1,4 +1,4 @@
-# display truetype font for Arduino  
+# Display truetype font for Arduino  
 Read truetype(.ttf) from SD and generate bitmap.
 
 TrueType™ Reference Manual  
