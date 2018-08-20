@@ -11,6 +11,8 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 
 # Future work
 - Correction that some files can not be read  
+- Faster display of fonts  
+- Decrease usage of SRAM  
 
 # Display  
 - ILI9341 https://github.com/k-omura/ILI9341_ttf  
