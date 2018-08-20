@@ -1,8 +1,4 @@
 # display truetype font for Arduino  
-It is based on the code by garretlab and changed.  
-https://github.com/garretlab/truetype  
-https://garretlab.web.fc2.com/arduino/lab/esp32_truetype  
-
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
 
@@ -18,3 +14,8 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 
 # Display  
 - ILI9341 https://github.com/k-omura/ILI9341_ttf  
+
+# Note  
+It is based on the code by garretlab and changed.  
+https://github.com/garretlab/truetype  
+https://garretlab.web.fc2.com/arduino/lab/esp32_truetype  
