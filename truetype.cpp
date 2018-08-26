@@ -1,8 +1,4 @@
 /*
-  .ttf from SD card by garretlab (modified)
-  https://github.com/garretlab/truetype
-  https://garretlab.web.fc2.com/arduino/lab/esp32_truetype
-
   TrueType™ Reference Manual
   https://developer.apple.com/fonts/TrueType-Reference-Manual/
 
@@ -10,17 +6,25 @@
 
 */
 
-#include "FS.h"
-#include "SD.h"
-#include "SPI.h"
 #include "truetype.h"
 
+#if defined ESP32
 SDFS *truetypeClass::sd;
+#else
+SDClass *truetypeClass::sd;
+#endif
 
 /* constructor */
+
+#if defined ESP32
 truetypeClass::truetypeClass(SDFS *sd) {
   this->sd = sd;
 }
+#else
+truetypeClass::truetypeClass(SDClass *sd) {
+  this->sd = sd;
+}
+#endif
 
 /* get uint8_t at the current position */
 uint8_t truetypeClass::getUInt8t() {
@@ -353,7 +357,12 @@ int truetypeClass::readSimpleGlyph() {
   for (int i = 0; i < glyph.numberOfContours; i++) {
     glyph.endPtsOfContours[i] = getUInt16t();
   }
+
+  #if defined ESP32
   file.seek(getUInt16t(), SeekCur);
+  #else
+  file.seek(getUInt16t() + file.position());
+  #endif
 
   if (glyph.numberOfContours == 0) {
     return 0;
@@ -473,7 +482,7 @@ uint8_t truetypeClass::generateBitmap(uint16_t _height) {
       } else {
         //Bezier curve (More than three cubic)
         //Decompose into n three-dimensional and two-dimensional (Interim solution. future work)
-        
+
         x0 = glyph.points[j].x;
         y0 = glyph.points[j].y;
 
