@@ -1,20 +1,23 @@
 /*
-  .ttf from SD card by garretlab (modified)
-  https://github.com/garretlab/truetype
-  https://garretlab.web.fc2.com/arduino/lab/esp32_truetype
+  Read truetype(.ttf) from SD and generate bitmap.
 
   TrueType™ Reference Manual
   https://developer.apple.com/fonts/TrueType-Reference-Manual/
-
-  output to ILI9341 sample
-
 */
 
-#ifndef TRUETYPE_H
 #define TRUETYPE_H
-#include "FS.h"
+
+#if !defined __SD_H__
 #include "SD.h"
+#endif /*__SD_H__*/
+
+#if !defined _SPI_H_INCLUDED
 #include "SPI.h"
+#endif /*_SPI_H_INCLUDED*/
+
+#if defined ESP32
+#include "FS.h"
+#endif /*FS_H*/
 
 #define FLAG_ONCURVE (1 << 0)
 #define FLAG_XSHORT (1 << 1)
@@ -101,7 +104,11 @@ typedef struct {
 
 class truetypeClass {
   public:
+    #if defined ESP32
     truetypeClass(SDFS *sd);
+    #else
+    truetypeClass(SDClass *sd);
+    #endif
 
     int xMin, xMax, yMin, yMax;
 
@@ -120,7 +127,11 @@ class truetypeClass {
     bool isInside(int x, int y);
 
   private:
+    #if defined ESP32
     static SDFS *sd;
+    #else
+    static SDClass *sd;
+    #endif
 
     const int numTablesPos = 4;
     const int tablePos = 12;
@@ -167,5 +178,3 @@ class truetypeClass {
     void freeEndPoints();
     int isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate_t &_point);
 };
-
-#endif /* TRUETYPE_H */
