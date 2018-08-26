@@ -4,7 +4,7 @@ Read truetype(.ttf) from SD and generate bitmap.
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
 
-tested on ESP32  
+Works on ESP32 only.  
 
 # Originality  
 - Separate programs in terms of the "generating a font bitmap" and the "displaying on the screen"  
