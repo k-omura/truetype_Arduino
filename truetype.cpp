@@ -1,9 +1,8 @@
 /*
+  Read truetype(.ttf) from SD and generate bitmap.
+
   TrueType™ Reference Manual
   https://developer.apple.com/fonts/TrueType-Reference-Manual/
-
-  output to ILI9341 sample
-
 */
 
 #include "truetype.h"
