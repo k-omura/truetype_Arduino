@@ -15,6 +15,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Correction that some files can not be read  
 - Faster display of fonts  
 - Decrease usage of SRAM  
+- Work only for Only works with esp32 (Caused by SD file system surroundings)  
 
 # Display  
 - ILI9341 https://github.com/k-omura/ILI9341_ttf  
