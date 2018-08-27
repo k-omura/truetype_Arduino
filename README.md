@@ -24,6 +24,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 
 # Display  
 - ILI9341 https://github.com/k-omura/ILI9341_ttf  
+- SSD1331 https://github.com/k-omura/SSD1331_ttf  
 
 # Note  
 It is based on the code by garretlab and changed.  
