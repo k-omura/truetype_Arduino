@@ -26,10 +26,10 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Correction that some files can not be read  
 - Faster display of fonts  
 - Decrease usage of SRAM(Only works with esp32)  
-- Support for more various displays  
 - Handling of Bezier curve(Currently, provisional processing)  
 
 ## display  
+- Support for more various displays  
 - Faster display of fonts (especially complex characters such as kanji).  
 - Align text to the right.  
 
