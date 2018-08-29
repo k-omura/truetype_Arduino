@@ -1,8 +1,8 @@
-#include "SSD1331_ttf.h"
+#include "spi_fullcolor_basis.h"
 
 SPIClass *outputttf::spi;
 
-/* constructor */
+//constructor
 outputttf::outputttf(SPIClass *_spi) {
   this->spi = _spi;
 }
@@ -31,8 +31,7 @@ uint8_t outputttf::displayString(uint8_t start_x, uint8_t start_y, const char ch
     font->adjustGlyph();
     start_x += outputTFT(start_x, start_y, characterSize);
     start_x += characterSpace; //space between charctor
-    font->freeGlyph();
-    SSD1331_fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize, this->backgroundColor, this->backgroundColor);
+    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize, this->backgroundColor);
     c++;
   }
   return start_x;
@@ -46,8 +45,7 @@ uint8_t outputttf::displayString(uint8_t start_x, uint8_t start_y, const wchar_t
     font->adjustGlyph();
     start_x += outputTFT(start_x, start_y, characterSize);
     start_x += characterSpace; //space between charctor
-    font->freeGlyph();
-    SSD1331_fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize, this->backgroundColor, this->backgroundColor);
+    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize, this->backgroundColor);
     c++;
   }
   return start_x;
@@ -62,26 +60,25 @@ uint8_t outputttf::displayMonospaced(uint8_t start_x, uint8_t start_y, const cha
     font->adjustGlyph();
     outputTFT(start_x, start_y, characterSize, monospacedWidth);
     start_x += monospacedWidth;
-    font->freeGlyph();
     c++;
   }
   return start_x;
 }
 
 uint8_t outputttf::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint8_t monospacedWidth) {
-  //---Code for displaying a bitmap in SSD1331
+  //---Code for displaying a bitmap
   uint8_t width = font->generateBitmap(_height);
 
   //In case of the monospaced, align to the right in the frame
   if(monospacedWidth){
     uint8_t surplusWidth = monospacedWidth - width;
-    SSD1331_fill_rect(_x, _x + surplusWidth - 1, _y, _y + _height, this->backgroundColor, this->backgroundColor);
+    fill_rect(_x, _x + surplusWidth - 1, _y, _y + _height, this->backgroundColor);
     _x += surplusWidth;
   }
 
-  //Rectangle setting required for drawing SSD1331
+  //Rectangle setting required for drawing
   digitalWrite(this->TFT_CS, LOW);
-  SSD1331_set_rect(_x, (_x + width - 1), _y, (_y + _height - 1));
+  set_rect(_x, (_x + width - 1), _y, (_y + _height - 1));
 
   //Drawing character
   for (uint8_t pixel_y = 0; pixel_y < _height; pixel_y++) {
@@ -101,49 +98,21 @@ uint8_t outputttf::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint8_t mo
   }
   digitalWrite(this->TFT_CS, HIGH);
   //Drawing character end
-  //---Code for displaying a bitmap in SSD1331 end
+  //---Code for displaying a bitmap end
 
   font->freeBitmap();
+  font->freeGlyph();
 
   return width;
 }
 
-//Rectangle setting required for drawing SSD1331
-void outputttf::SSD1331_set_rect(uint8_t _x1, uint8_t _x2, uint8_t _y1, uint8_t _y2) {
-  digitalWrite(this->TFT_DC, LOW);
-  spi->transfer(CMD_COLUMN_ADDRESS);
-  spi->transfer(_x1);
-  spi->transfer(_x2);
-  spi->transfer(CMD_ROW_ADDRESS);
-  spi->transfer(_y1);
-  spi->transfer(_y2);
-  digitalWrite(this->TFT_DC, HIGH);
-}
+void outputttf::fill_rect(uint8_t _x1, uint8_t _x2, uint8_t _y1, uint8_t _y2, uint16_t _color) {
+  uint32_t repeat = (_x2 - _x1 + 1) * (_y2 - _y1 + 1);
 
-void outputttf::SSD1331_fill_rect(uint8_t _x1, uint8_t _x2, uint8_t _y1, uint8_t _y2, uint16_t _outline, uint16_t _innner) {
-  rgb16_t color;
   digitalWrite(this->TFT_CS, LOW);
-  digitalWrite(this->TFT_DC, LOW);
-
-  spi->transfer(0x26);
-  spi->transfer(0b00000001);
-
-  spi->transfer(0x22);
-  spi->transfer(_x1);
-  spi->transfer(_y1);
-  spi->transfer(_x2);
-  spi->transfer(_y2);
-
-  color.raw = _outline;
-  spi->transfer(color.rgb.b << 1);
-  spi->transfer(color.rgb.g);
-  spi->transfer(color.rgb.r << 1);
-
-  color.raw = _innner;
-  spi->transfer(color.rgb.b << 1);
-  spi->transfer(color.rgb.g);
-  spi->transfer(color.rgb.r << 1);
-
-  digitalWrite(this->TFT_DC, HIGH);
+  set_rect(_x1, _x2, _y1, _y2);
+  for (uint32_t i = 0; i < repeat; i++) {
+    spi->transfer16(_color);
+  }
   digitalWrite(this->TFT_CS, HIGH);
 }
