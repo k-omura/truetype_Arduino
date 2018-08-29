@@ -40,5 +40,5 @@ class outputttf {
     uint8_t outputTFT(uint8_t _x, uint8_t y_, uint8_t _height, uint8_t monospacedWidth = 0);
 
     virtual void set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) = 0;
-    virtual void fill_rect(uint8_t _x1, uint8_t _x2, uint8_t _y1, uint8_t _y2, uint16_t _color);
+    virtual void fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2, uint16_t _color);
 };
