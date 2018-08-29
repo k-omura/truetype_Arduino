@@ -21,7 +21,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Displays without depending on libraries such as Adafruit  
 - Outline color and the fill color can be set individually  
 
-# Future work  
+# Future work (Issues)  
 ## truetype  
 - Correction that some files can not be read  
 - Faster display of fonts  
@@ -29,6 +29,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Support for more various displays  
 
 ## display  
+- ILI9341: Operation stops halfway when displaying Japanese(or big font).
 - Faster display of fonts (especially complex characters such as kanji).  
 - Align text to the right.  
 
