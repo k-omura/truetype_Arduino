@@ -1,6 +1,10 @@
 #if !defined TRUETYPE_H
-#include "truetype.h"
+#include "truetype_Arduino.h"
 #endif /* TRUETYPE_H */
+
+#if !defined SPI_FULLCOLOR_H
+#include "spi_fullcolor_basis.h"
+#endif /* SPI_FULLCOLOR_H */
 
 //TFT command list
 //#define PORTRAIT
@@ -32,29 +36,10 @@
 #endif
 //TFT command list end
 
-class outputttf {
+class ILI9341_spi_ttf : public outputttf {
   public:
-    outputttf(SPIClass *_spi);
+    ILI9341_spi_ttf(SPIClass *_spi);
 
-    void setTruetype(truetypeClass *_ttf);
-    void setSPIpin(uint8_t _cs, uint8_t _reset, uint8_t _dc);
-    void setColor(uint16_t _inside, uint16_t _outline, uint16_t _background);
-
-    uint16_t displayString(uint16_t start_x, uint16_t start_y, const char character[], char characterSize, char characterSpace);
-    uint16_t displayString(uint16_t start_x, uint16_t start_y, const wchar_t character[], char characterSize, char characterSpace);
-
-  private:
-    static SPIClass *spi;
-    truetypeClass *font;
-
-    uint8_t TFT_CS;
-    uint8_t TFT_RESET;
-    uint8_t TFT_DC;
-
-    uint16_t outlineColor;
-    uint16_t insideColor;
-    uint16_t backgroundColor;
-
-    uint8_t outputTFT(uint16_t x, uint16_t y, uint16_t height);
-    void ILI9341_set_rect(uint16_t x1, uint16_t x2, uint16_t y1, uint16_t y2);
+  protected:
+    void set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2);
 };
