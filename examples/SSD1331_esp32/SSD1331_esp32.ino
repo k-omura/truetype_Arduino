@@ -50,7 +50,7 @@
 //OLED color end
 
 //SPI pin settings
-SPIClass OLEDspi = SPIClass(VSPI);
+SPIClass OLEDspi = SPIClass(VSPI); //Both HSPI and VSPI are available
 ssd1331_ttf ttfout = ssd1331_ttf(&OLEDspi);
 enum {
   OLED_CS = 27,
