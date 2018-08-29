@@ -9,8 +9,7 @@
 #include <SPI.h>
 #include <SD.h>
 
-#include "truetype.h"
-#include "ILI9341_ttf.h"
+#include "ILI9341_spi_ttf.h"
 
 //TFT command list
 //#define PORTRAIT
@@ -46,6 +45,9 @@
 #define TFT_background 0b0000000000000000
 #define TFT_white 0b1111011111011110
 #define TFT_RED 0xF800
+#define TFT_yellow 0b1110011110000000
+#define TFT_blue 0b0011000110011111
+#define TFT_green 0b0011011110000011
 //TFT color end
 
 //SPI pin settings
