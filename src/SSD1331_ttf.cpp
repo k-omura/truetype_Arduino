@@ -15,7 +15,7 @@ void ssd1331_ttf::set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y
   digitalWrite(this->TFT_DC, HIGH);
 }
 
-void ssd1331_ttf::fill_rect(uint8_t _x1, uint8_t _x2, uint8_t _y1, uint8_t _y2, uint16_t _color) {
+void ssd1331_ttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2, uint16_t _color) {
   rgb16_t color;
   digitalWrite(this->TFT_CS, LOW);
   digitalWrite(this->TFT_DC, LOW);
