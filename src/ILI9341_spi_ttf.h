@@ -36,7 +36,7 @@
 #endif
 //TFT command list end
 
-class ILI9341_spi_ttf : public outputttf {
+class ILI9341_spi_ttf : public ttfSpiFullColor {
   public:
     ILI9341_spi_ttf(SPIClass *_spi);
 
