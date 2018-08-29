@@ -1,7 +1,7 @@
 #include "ILI9341_spi_ttf.h"
 
 //constructor
-ILI9341_spi_ttf::ILI9341_spi_ttf(SPIClass *_spi) : outputttf(_spi) {};
+ILI9341_spi_ttf::ILI9341_spi_ttf(SPIClass *_spi) : ttfSpiFullColor(_spi) {};
 
 //Rectangle setting required for drawing ILI9341
 void ILI9341_spi_ttf::set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) {
