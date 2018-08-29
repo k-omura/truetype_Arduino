@@ -1,12 +1,15 @@
 /*
+  TrueType™ Reference Manual
+  https://developer.apple.com/fonts/TrueType-Reference-Manual/
+
   output to SSD1331 sample
 
 */
+
 #include <FS.h>
 #include <SPI.h>
 #include <SD.h>
 
-#include "truetype.h"
 #include "SSD1331_ttf.h"
 
 //OLED command list
@@ -48,7 +51,7 @@
 
 //SPI pin settings
 SPIClass OLEDspi = SPIClass(VSPI);
-outputttf ttfout = outputttf(&OLEDspi);
+ssd1331_ttf ttfout = ssd1331_ttf(&OLEDspi);
 enum {
   OLED_CS = 27,
   OLED_RESET = 26,
