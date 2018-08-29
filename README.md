@@ -30,7 +30,6 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Handling of Bezier curve(Currently, provisional processing)  
 
 ## display  
-- ILI9341: Operation stops halfway when displaying Japanese(or big font).
 - Faster display of fonts (especially complex characters such as kanji).  
 - Align text to the right.  
 
