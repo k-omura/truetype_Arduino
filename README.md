@@ -33,8 +33,8 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Align text to the right.  
 
 # Supported display  
-- ILI9341 https://github.com/k-omura/ILI9341_ttf  
-- SSD1331 https://github.com/k-omura/SSD1331_ttf  
+- ILI9341 (SPI)  
+- SSD1331 (SPI)  
 
 # Demo  
 - [ILI9341](https://youtu.be/_-4tfssNTYE "ILI9341")  
