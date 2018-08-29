@@ -27,6 +27,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Faster display of fonts  
 - Decrease usage of SRAM(Only works with esp32)  
 - Support for more various displays  
+- Handling of Bezier curve(Currently, provisional processing)  
 
 ## display  
 - ILI9341: Operation stops halfway when displaying Japanese(or big font).
