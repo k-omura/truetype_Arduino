@@ -34,7 +34,7 @@
 #endif
 //OLED command list end
 
-class ssd1331_ttf : public outputttf {
+class ssd1331_ttf : public ttfSpiFullColor {
   public:
     ssd1331_ttf(SPIClass *_spi);
 
