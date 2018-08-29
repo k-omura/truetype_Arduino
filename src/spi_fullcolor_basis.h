@@ -13,9 +13,9 @@ typedef union {
   } rgb;
 } rgb16_t;
 
-class outputttf {
+class ttfSpiFullColor {
   public:
-    outputttf(SPIClass *_spi);
+    ttfSpiFullColor(SPIClass *_spi);
 
     void setTruetype(truetypeClass *_ttf);
     void setSPIpin(uint8_t _cs, uint8_t _reset, uint8_t _dc);
