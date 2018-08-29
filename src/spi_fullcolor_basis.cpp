@@ -106,9 +106,9 @@ uint8_t outputttf::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint8_t mo
   return width;
 }
 
-void outputttf::fill_rect(uint8_t _x1, uint8_t _x2, uint8_t _y1, uint8_t _y2, uint16_t _color) {
+void outputttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2, uint16_t _color) {
   uint32_t repeat = (_x2 - _x1 + 1) * (_y2 - _y1 + 1);
-
+  
   digitalWrite(this->TFT_CS, LOW);
   set_rect(_x1, _x2, _y1, _y2);
   for (uint32_t i = 0; i < repeat; i++) {
