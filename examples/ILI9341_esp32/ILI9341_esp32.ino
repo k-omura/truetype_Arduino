@@ -52,7 +52,7 @@
 //TFT color end
 
 //SPI pin settings
-SPIClass TFTspi = SPIClass(HSPI);
+SPIClass TFTspi = SPIClass(HSPI); //Both HSPI and VSPI are available
 ILI9341_spi_ttf ttfout = ILI9341_spi_ttf(&TFTspi);
 enum {
   TFT_CS = 27,
