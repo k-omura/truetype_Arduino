@@ -32,10 +32,14 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Support for more various displays  
 - Faster display of fonts (especially complex characters such as kanji).  
 - Align text to the right.  
+- SSD1306: Text indication is not independent.  
+  - Because it writes directly to the display, it will erase the display nearby due to its structure. It can be solved by passing through a buffer.  
+- SSD1306: Noises rarely occur at the bottom of letters.  
 
 # Supported display  
 - ILI9341 (SPI)  
 - SSD1331 (SPI)  
+- SSD1306 (SPI)  
 
 # Demo  
 - [ILI9341](https://youtu.be/_-4tfssNTYE "ILI9341")  
