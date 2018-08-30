@@ -43,7 +43,8 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 
 # Demo  
 - [ILI9341](https://youtu.be/_-4tfssNTYE "ILI9341")  
-- [SSD1331](https://youtu.be/wlubShLcMqE "SSD1331")   
+- [SSD1331](https://youtu.be/wlubShLcMqE "SSD1331")    
+- [SSD1306](https://youtu.be/WLiS6KDrS6Q "SSD1306")  
 
 # Note  
 Confirm the copyright of the font file. I did not distribute font files.  
