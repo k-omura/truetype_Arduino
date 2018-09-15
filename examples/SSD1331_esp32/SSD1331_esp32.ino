@@ -1,11 +1,7 @@
 /*
-  TrueType™ Reference Manual
-  https://developer.apple.com/fonts/TrueType-Reference-Manual/
-
   output to SSD1331 sample
 
 */
-
 #include <FS.h>
 #include <SPI.h>
 #include <SD.h>
@@ -50,7 +46,7 @@
 //OLED color end
 
 //SPI pin settings
-SPIClass OLEDspi = SPIClass(VSPI); //Both HSPI and VSPI are available
+SPIClass OLEDspi = SPIClass(VSPI);
 ssd1331_ttf ttfout = ssd1331_ttf(&OLEDspi);
 enum {
   OLED_CS = 27,
@@ -96,10 +92,13 @@ void setup() {
   digitalWrite(OLED_RESET, HIGH);
 
   OLED_init_CMD();
+  OLED_clear(0, OLEDWidth, 0, OLEDHeifht);
   //LCD initilizetion end
 
-  //fill black
-  OLED_fill_rect(0, OLEDWidth, 0, OLEDHeifht, OLED_background, OLED_background);
+  OLED_fill_rect(20, 50, 30, 40, OLED_white, OLED_background); //fill black
+  OLED_fill_rect(30, 40, 20, 35, OLED_RED, OLED_background); //fill black
+  OLED_fill_rect(10, 90, 5, 10, OLED_yellow, OLED_background); //fill black
+  delay(10000);
 
   font.begin(SD_CS, fontFile);
   font2.begin(SD_CS, fontFile2);
@@ -135,14 +134,14 @@ void setup() {
 
   //fill black
   OLED_fill_rect(0, OLEDWidth, 0, OLEDHeifht, OLED_background, OLED_background);
-  
+
   //count up
   for (int i = 0; i <= 100; i++) {
     char number[4];
     sprintf(number, "%03d", i);
     ttfout.displayMonospaced(2, 5, number, 50, 30); //output string (start_x, start_y, string(char), height of charctor, Monospace value)
   }
-  
+
   //fill black
   OLED_fill_rect(0, OLEDWidth, 0, OLEDHeifht, OLED_background, OLED_background);
 }
@@ -155,7 +154,7 @@ wchar_t charctor[2] = {i, 0};
 
 void loop() {
   //display all unicode charactor
-  ttfout.displayString(25, 2, charctor, 60, 0);
+  ttfout.displayString(25, 2, charctor, 60, 10);
   charctor[0]++;
 
   delay(10);
@@ -216,6 +215,22 @@ void OLED_copy(uint8_t x0, uint8_t x1, uint8_t y0, uint8_t y1, uint8_t X, uint8_
   OLEDspi.transfer(X);
   OLEDspi.transfer(Y);
 
+  digitalWrite(OLED_DC, HIGH);
+  digitalWrite(OLED_CS, HIGH);
+}
+
+void OLED_clear(uint8_t _x0, uint8_t _x1, uint8_t _y0, uint8_t _y1) {
+  digitalWrite(OLED_CS, LOW);
+  digitalWrite(OLED_DC, LOW);
+  
+  delay(1);
+  OLEDspi.transfer(0x25); //Clear Window
+  OLEDspi.transfer(_x0); //Column Address of Start
+  OLEDspi.transfer(_y0); //Row Address of Start
+  OLEDspi.transfer(_x1); //Column Address of End
+  OLEDspi.transfer(_y1); //Row Address of End
+  delay(1);
+  
   digitalWrite(OLED_DC, HIGH);
   digitalWrite(OLED_CS, HIGH);
 }
