@@ -1,71 +1,9 @@
 #include "SSD1306_spi_ttf.h"
 
-SPIClass *ssd1306_spi_ttf::spi;
-
 //constructor
-ssd1306_spi_ttf::ssd1306_spi_ttf(SPIClass *_spi) {
-  this->spi = _spi;
-}
+ssd1306_spi_ttf::ssd1306_spi_ttf(SPIClass *_spi) : ttfSpiMonoColor(_spi) {};
 
-void ssd1306_spi_ttf::setTruetype(truetypeClass *_ttf) {
-  this->font = _ttf;
-}
-
-void ssd1306_spi_ttf::setSPIpin(uint8_t _cs, uint8_t _reset, uint8_t _dc) {
-  this->TFT_CS = _cs;
-  this->TFT_RESET = _reset;
-  this->TFT_DC = _dc;
-}
-
-void ssd1306_spi_ttf::setColor(bool _inside, bool _outline, bool _background) {
-  this->insideColor = _inside;
-  this->outlineColor = _outline;
-  this->backgroundColor = _background;
-}
-
-uint8_t ssd1306_spi_ttf::displayString(uint8_t start_x, uint8_t start_y, const char character[], uint8_t characterSize, uint8_t characterSpace) {
-  uint8_t c = 0;
-
-  while (character[c]) {
-    font->readGlyph(character[c]);
-    font->adjustGlyph();
-    start_x += outputTFT(start_x, start_y, characterSize);
-    start_x += characterSpace; //space between charctor
-    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize, this->backgroundColor);
-    c++;
-  }
-  return start_x;
-}
-
-uint8_t ssd1306_spi_ttf::displayString(uint8_t start_x, uint8_t start_y, const wchar_t character[], uint8_t characterSize, uint8_t characterSpace) {
-  uint8_t c = 0;
-
-  while (character[c]) {
-    font->readGlyph(character[c]);
-    font->adjustGlyph();
-    start_x += outputTFT(start_x, start_y, characterSize);
-    start_x += characterSpace; //space between charctor
-    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize, this->backgroundColor);
-    c++;
-  }
-  return start_x;
-}
-
-uint8_t ssd1306_spi_ttf::displayMonospaced(uint8_t start_x, uint8_t start_y, const char character[], uint8_t characterSize, uint8_t monospacedWidth) {
-  uint8_t c = 0;
-
-  while (character[c]) {
-    uint8_t width;
-    font->readGlyph(character[c]);
-    font->adjustGlyph();
-    outputTFT(start_x, start_y, characterSize, monospacedWidth);
-    start_x += monospacedWidth;
-    c++;
-  }
-  return start_x;
-}
-
-uint8_t ssd1306_spi_ttf::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint8_t monospacedWidth) {
+uint8_t ssd1306_spi_ttf::outputDisplay(uint8_t _x, uint8_t _y, uint8_t _height, uint8_t monospacedWidth) {
   //---Code for displaying a bitmap
   uint8_t width = font->generateBitmap(_height);
 
@@ -81,9 +19,9 @@ uint8_t ssd1306_spi_ttf::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint
   uint8_t page_y = 0;
 
   //Rectangle setting required for drawing
-  digitalWrite(this->TFT_CS, LOW);
-
+  digitalWrite(this->Display_CS, LOW);
   set_rect(_x, (_x + width - 1), _y, (_y + _height - 1));
+  
   //Drawing character
   uint8_t firstPageBit = 8 - (_y % 8);
   for (uint8_t pixel_x = 0; pixel_x < width; pixel_x++) {
@@ -152,8 +90,8 @@ uint8_t ssd1306_spi_ttf::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint
     spi->transfer(fillData);
   }
 
-  digitalWrite(this->TFT_CS, HIGH);
   //Drawing character end
+  digitalWrite(this->Display_CS, HIGH);
   //---Code for displaying a bitmap end
 
   font->freeBitmap();
@@ -168,7 +106,7 @@ void ssd1306_spi_ttf::set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_
   startPage = (uint8_t)(_y1 / 8);
   endPage = (uint8_t)(_y2 / 8);
 
-  digitalWrite(this->TFT_DC, LOW);
+  digitalWrite(this->Display_DC, LOW);
 
   spi->transfer(CMD_COLUMN_ADDR);
   spi->transfer((uint8_t)_x1);
@@ -177,7 +115,7 @@ void ssd1306_spi_ttf::set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_
   spi->transfer(startPage);
   spi->transfer(endPage);
 
-  digitalWrite(this->TFT_DC, HIGH);
+  digitalWrite(this->Display_DC, HIGH);
 
   return;
 }
@@ -203,7 +141,7 @@ void ssd1306_spi_ttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16
     lastPageData = 0b00000000;
   }
 
-  digitalWrite(this->TFT_CS, LOW);
+  digitalWrite(this->Display_CS, LOW);
 
   set_rect(_x1, _x2, _y1, _y2);
 
@@ -229,5 +167,5 @@ void ssd1306_spi_ttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16
     }
   }
 
-  digitalWrite(this->TFT_CS, HIGH);
+  digitalWrite(this->Display_CS, HIGH);
 }
