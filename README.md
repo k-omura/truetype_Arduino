@@ -37,9 +37,13 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - SSD1306: Noises rarely occur at the bottom of letters.  
 
 # Supported display  
-- ILI9341 (SPI)  
-- SSD1331 (SPI)  
-- SSD1306 (SPI)  
+- Full color
+  - ILI9341 (SPI)  
+  - SSD1331 (SPI)  
+  - (in progress)ST7735 (SPI)  
+- Mono
+  - SSD1306 (SPI)  
+  - (in progress)Waveshare e-Paper 2.9inch (SPI)  
 
 It is common to use the SPI for loading the SD card. For that reason, the work of the I I2C display is not prioritized.  
 
