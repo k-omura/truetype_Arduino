@@ -49,17 +49,17 @@ class waveshare_ePaper_spi_ttf : public ttfSpiMonoColor {
     waveshare_ePaper_spi_ttf(SPIClass *_spi);
     void setSPIpin(uint8_t _cs, uint8_t _reset, uint8_t _dc, uint8_t _busy);
     void init(bool portrait = initPortrait);
-    void setLut();
 
   protected:
     uint8_t Display_BUSY;
     const unsigned char* lut;
     bool displayPortrait;
 
+    void setLut();
     uint8_t outputDisplay(uint8_t _x, uint8_t y_, uint8_t _height, uint8_t monospacedWidth = 0);
     void set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2);
-    void fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2, bool _color, bool _reversal = LOW);
     void setMemoryPointer(int _x, int _y);
+    void fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2, bool _color, bool _reversal = HIGH);
     void wait_ePaper();
 };
 
