@@ -38,11 +38,11 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 
 # Supported display  
 - Full color
-  - ILI9341 (SPI)[demo](https://youtu.be/_-4tfssNTYE "ILI9341")    
-  - SSD1331 (SPI)[demo](https://youtu.be/wlubShLcMqE "SSD1331")  
+  - ILI9341 (SPI) [Demo](https://youtu.be/_-4tfssNTYE "ILI9341")    
+  - SSD1331 (SPI) [Demo](https://youtu.be/wlubShLcMqE "SSD1331")  
   - (in progress)ST7735 (SPI)  
 - Mono
-  - SSD1306 (SPI)[demo](https://youtu.be/WLiS6KDrS6Q "SSD1306")  
+  - SSD1306 (SPI) [Demo](https://youtu.be/WLiS6KDrS6Q "SSD1306")  
   - (in progress)Waveshare e-Paper 2.9inch (SPI)  
 
 It is common to use the SPI for loading the SD card. For that reason, the work of the I2C display is not prioritized.  
