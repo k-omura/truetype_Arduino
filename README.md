@@ -45,7 +45,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
   - SSD1306 (SPI)  
   - (in progress)Waveshare e-Paper 2.9inch (SPI)  
 
-It is common to use the SPI for loading the SD card. For that reason, the work of the I I2C display is not prioritized.  
+It is common to use the SPI for loading the SD card. For that reason, the work of the I2C display is not prioritized.  
 
 # Demo  
 - [ILI9341](https://youtu.be/_-4tfssNTYE "ILI9341")  
