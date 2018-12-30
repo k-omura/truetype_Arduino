@@ -8,33 +8,34 @@ Works on ESP32 only.
 
 # Originality  
 ## truetype  
-- Separate programs in terms of the "generating a font bitmap" and the "displaying on the screen"  
-- Fixed problem that some font files could not be read  
-- Handling Bezier curves  
-- Changes for expansion to other than ESP32  
+- Separate programs in terms of the "generating a font bitmap" and the "displaying on the screen".  
+- Fixed problem that some font files could not be read.  
+- Handling Bezier curves.  
+- Changes for expansion to other than ESP32.  
 
 I divided the reading of the font file and the display on the screen. Which allows expansion to various displays.  
 In the original, an error occurred except for the font file verified by the author, so we made a correction.  
 Also, in the original, it corresponds to the second-order Bezier curve, and an error occurs depending on the font file. Therefore, this code incorporates a provisional solution to higher-order Bezier curve.  
 
 ## display  
-- Displays without depending on libraries such as Adafruit  
-- Outline color and the fill color can be set individually  
+- Displays without depending on libraries such as Adafruit.  
+- Outline color and the fill color can be set individually.  
 
 # Future work (Issues)  
 ## truetype  
-- Correction that some files can not be read  
-- Faster display of fonts  
-- Decrease usage of SRAM(Only works with esp32)  
-- Handling of Bezier curve(Currently, provisional processing)  
+- Correction that some files can not be read.  
+- Faster display of fonts.  
+- Decrease usage of SRAM(Only works with esp32).  
+- Handling of Bezier curve(Currently, provisional processing).  
 
 ## display  
-- Support for more various displays  
+- Support for more various displays.  
 - Faster display of fonts (especially complex characters such as kanji).  
+- Make underline available.  
 - Align text to the right.  
-- SSD1306: Text indication is not independent.  
+- Mono display: Text indication is not independent.  
   - Because it writes directly to the display, it will erase the display nearby due to its structure. It can be solved by passing through a buffer.  
-- SSD1306: Noises rarely occur at the bottom of letters.  
+- Mono display: Noises rarely occur at the bottom of letters.  
 
 # Supported display  
 - Full color
