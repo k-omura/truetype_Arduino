@@ -54,9 +54,9 @@ void waveshare_ePaper_spi_ttf::init(bool portrait) {
   digitalWrite(this->Display_DC, LOW);
   spi->transfer(DATA_ENTRY_MODE_SETTING);
   digitalWrite(this->Display_DC, HIGH);
-  if(displayPortrait){
+  if (displayPortrait) {
     spi->transfer(0x03); // X increment; Y increment
-  }else{
+  } else {
     spi->transfer(0x05); // X increment; Y decrement, the address counter is updated in the Y direction.
   }
 
@@ -71,7 +71,7 @@ void waveshare_ePaper_spi_ttf::init(bool portrait) {
 }
 
 //set the look-up table register
-void waveshare_ePaper_spi_ttf::setLut(){
+void waveshare_ePaper_spi_ttf::setLut() {
   digitalWrite(this->Display_CS, LOW);
 
   digitalWrite(this->Display_DC, LOW);
@@ -96,12 +96,11 @@ uint8_t waveshare_ePaper_spi_ttf::outputDisplay(uint8_t _x, uint8_t _y, uint8_t 
   //In case of the monospaced, align to the right in the frame
   if (monospacedWidth) {
     uint8_t surplusWidth = monospacedWidth - width;
-    fill_rect(_x, _x + surplusWidth - 1, _y, _y + _height, this->backgroundColor);
+    fill_rect(_x, _x + surplusWidth - 1, _y, _y + _height - 1, this->backgroundColor);
     _x += surplusWidth;
   }
 
-  uint8_t lastPage = (uint8_t)((_height) / 8) + 1;
-  int8_t seekPageNum = lastPage - 2;
+  int8_t midSeekPageNum = (uint8_t)((_y + _height - 1) / 8) - (uint8_t)(_y / 8) - 1;
   uint8_t page_y = 0;
 
   //Rectangle setting required for drawing
@@ -112,11 +111,11 @@ uint8_t waveshare_ePaper_spi_ttf::outputDisplay(uint8_t _x, uint8_t _y, uint8_t 
   digitalWrite(this->Display_DC, LOW);
   spi->transfer(WRITE_RAM);
   digitalWrite(this->Display_DC, HIGH);
-  
+
   //Drawing character
   uint8_t firstPageBit = 8 - (_y % 8);
   for (uint8_t pixel_x = 0; pixel_x < width; pixel_x++) {
-    uint8_t fillData = 0b11111111;
+    uint8_t fillData = 0b00000000;
     for (uint8_t bitCount = 0; bitCount < firstPageBit; bitCount++) {
       bool pixel;
       if (font->getPixel(pixel_x, bitCount, width)) {
@@ -128,17 +127,17 @@ uint8_t waveshare_ePaper_spi_ttf::outputDisplay(uint8_t _x, uint8_t _y, uint8_t 
       }
 
       fillData <<= 1;
-      if (!pixel) {
+      if (pixel) {
         fillData += 0b00000001;
       }
     }
-    spi->transfer(fillData);
+    spi->transfer(~fillData);
   }
   page_y += firstPageBit;
 
-  for (int8_t page = 0; page < seekPageNum; page++) {
+  for (int8_t page = 0; page < midSeekPageNum; page++) {
     for (uint8_t pixel_x = 0; pixel_x < width; pixel_x++) {
-      uint8_t fillData = 0b11111111;
+      uint8_t fillData = 0b00000000;
       for (uint8_t bitCount = 0; bitCount < 8; bitCount++) {
         bool pixel;
         if (font->getPixel(pixel_x, page_y + bitCount, width)) {
@@ -150,18 +149,18 @@ uint8_t waveshare_ePaper_spi_ttf::outputDisplay(uint8_t _x, uint8_t _y, uint8_t 
         }
 
         fillData <<= 1;
-        if (!pixel) {
+        if (pixel) {
           fillData += 0b00000001;
         }
       }
-      spi->transfer(fillData);
+      spi->transfer(~fillData);
     }
     page_y += 8;
   }
 
-  uint8_t lastPageBit =  8 - ((_y + _height) % 8);
+  uint8_t lastPageBit =  (_y + _height - 1) % 8;
   for (uint8_t pixel_x = 0; pixel_x < width; pixel_x++) {
-    uint8_t fillData = 0b11111111;
+    uint8_t fillData = 0b00000000;
     for (uint8_t bitCount = 0; bitCount < lastPageBit; bitCount++) {
       bool pixel;
       if (font->getPixel(pixel_x, page_y + bitCount, width)) {
@@ -172,13 +171,13 @@ uint8_t waveshare_ePaper_spi_ttf::outputDisplay(uint8_t _x, uint8_t _y, uint8_t 
         pixel = this->backgroundColor; //Character background color
       }
 
-      fillData >>= 1;
-      if (!pixel) {
-        fillData += 0b10000000;
+      fillData <<= 1;
+      if (pixel) {
+        fillData += 0b00000001;
       }
     }
-    fillData >>= (8 - lastPageBit);
-    spi->transfer(fillData);
+    fillData <<= (8 - lastPageBit);
+    spi->transfer(~fillData);
   }
 
   //Drawing character end
@@ -231,12 +230,16 @@ void waveshare_ePaper_spi_ttf::setMemoryPointer(int _x, int _y) {
 }
 
 void waveshare_ePaper_spi_ttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2, bool _color, bool _reversal) {
-  uint8_t seekColumn = _x2 - _x1 + 1;
-  int8_t seekPage = (uint8_t)(_y2 / 8) - (uint8_t)(_y1 / 8) - 1;
-  uint8_t firstPageBit = (_y1 % 8);
-  uint8_t lastPageBit = (_y2 % 8);
-
+  uint8_t seekColumn;
+  int8_t seekPage;
+  uint8_t firstPageBit, lastPageBit;
   uint8_t fillData, firstPageData, lastPageData;
+
+  seekColumn = _x2 - _x1 + 1;
+  seekPage = (uint8_t)(_y2 / 8) - (uint8_t)(_y1 / 8) - 1;
+  firstPageBit = (_y1 % 8);
+  lastPageBit = (_y2 % 8);
+
   fillData = 0b11111111;
   firstPageData = fillData >> (firstPageBit);
   lastPageData = fillData << (7 - lastPageBit);
@@ -245,11 +248,13 @@ void waveshare_ePaper_spi_ttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y
     fillData = ~fillData;
     firstPageData = ~firstPageData;
     lastPageData = ~lastPageData;
-  }/* else if (!_color) {
-    fillData = 0b00000000;
-    firstPageData = 0b00000000;
-    lastPageData = 0b00000000;
-  }*/
+  }
+
+  if (!_color) {
+    fillData = 0b11111111;
+    firstPageData = 0b11111111;
+    lastPageData = 0b11111111;
+  }
 
   digitalWrite(this->Display_CS, LOW);
   set_rect(_y1, _y2, ePaperWidth - _x1, ePaperWidth - _x2);
