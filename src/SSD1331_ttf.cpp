@@ -5,20 +5,20 @@ ssd1331_ttf::ssd1331_ttf(SPIClass *_spi) : ttfSpiFullColor(_spi) {};
 
 //Rectangle setting required for drawing SSD1331
 void ssd1331_ttf::set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) {
-  digitalWrite(this->TFT_DC, LOW);
+  digitalWrite(this->Display_DC, LOW);
   spi->transfer(CMD_COLUMN_ADDRESS);
   spi->transfer((uint8_t)_x1);
   spi->transfer((uint8_t)_x2);
   spi->transfer(CMD_ROW_ADDRESS);
   spi->transfer((uint8_t)_y1);
   spi->transfer((uint8_t)_y2);
-  digitalWrite(this->TFT_DC, HIGH);
+  digitalWrite(this->Display_DC, HIGH);
 }
 
-void ssd1331_ttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2, uint16_t _color) {
+void ssd1331_ttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) {
   rgb16_t color;
-  digitalWrite(this->TFT_CS, LOW);
-  digitalWrite(this->TFT_DC, LOW);
+  digitalWrite(this->Display_CS, LOW);
+  digitalWrite(this->Display_DC, LOW);
 
   spi->transfer(0x26);
   spi->transfer(0b00000001);
@@ -30,7 +30,7 @@ void ssd1331_ttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _
   spi->transfer(_y2);
 
   //color.raw = _outline;
-  color.raw = _color;
+  color.raw = this->backgroundColor;
   spi->transfer(color.rgb.b << 1);
   spi->transfer(color.rgb.g);
   spi->transfer(color.rgb.r << 1);
@@ -40,6 +40,6 @@ void ssd1331_ttf::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _
   spi->transfer(color.rgb.g);
   spi->transfer(color.rgb.r << 1);
 
-  digitalWrite(this->TFT_DC, HIGH);
-  digitalWrite(this->TFT_CS, HIGH);
+  digitalWrite(this->Display_DC, HIGH);
+  digitalWrite(this->Display_CS, HIGH);
 }
