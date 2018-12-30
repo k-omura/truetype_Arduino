@@ -35,7 +35,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Align text to the right.  
 - Mono display: Text indication is not independent.  
   - Because it writes directly to the display, it will erase the display nearby due to its structure. It can be solved by passing through a buffer.  
-- Mono display: Noises rarely occur at the bottom of letters.  
+- Mono display: Support Landscape only  
 
 # Supported display  
 - Full color
@@ -44,7 +44,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
   - (in progress)ST7735 (SPI)  
 - Mono
   - SSD1306 (SPI) [Demo](https://youtu.be/WLiS6KDrS6Q "SSD1306")  
-  - (in progress)Waveshare e-Paper 2.9inch (SPI)  
+  - Waveshare e-Paper 2.9inch (SPI) [Demo](https://youtu.be/qs_nOYCx91o "e-Paper")  
 
 It is common to use the SPI for loading the SD card. For that reason, the work of the I2C display is not prioritized.  
 
