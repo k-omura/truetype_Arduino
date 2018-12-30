@@ -23,6 +23,10 @@ void ttfSpiMonoColor::setColor(bool _inside, bool _outline, bool _background) {
   this->backgroundColor = _background;
 }
 
+void ttfSpiMonoColor::setUnderLine(bool _allowUnderLine) {
+  this->underLine = _allowUnderLine;
+}
+
 uint8_t ttfSpiMonoColor::displayString(uint8_t start_x, uint8_t start_y, const char character[], uint8_t characterSize, uint8_t characterSpace) {
   uint8_t c = 0;
 
@@ -31,7 +35,7 @@ uint8_t ttfSpiMonoColor::displayString(uint8_t start_x, uint8_t start_y, const c
     font->adjustGlyph();
     start_x += outputDisplay(start_x, start_y, characterSize);
     start_x += characterSpace; //space between charctor
-    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize, this->backgroundColor);
+    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize - 1, this->backgroundColor);
     c++;
   }
   return start_x;
@@ -45,7 +49,7 @@ uint8_t ttfSpiMonoColor::displayString(uint8_t start_x, uint8_t start_y, const w
     font->adjustGlyph();
     start_x += outputDisplay(start_x, start_y, characterSize);
     start_x += characterSpace; //space between charctor
-    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize, this->backgroundColor);
+    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize - 1, this->backgroundColor);
     c++;
   }
   return start_x;
@@ -72,12 +76,11 @@ uint8_t ttfSpiMonoColor::outputDisplay(uint8_t _x, uint8_t _y, uint8_t _height, 
   //In case of the monospaced, align to the right in the frame
   if (monospacedWidth) {
     uint8_t surplusWidth = monospacedWidth - width;
-    fill_rect(_x, _x + surplusWidth - 1, _y, _y + _height, this->backgroundColor);
+    fill_rect(_x, _x + surplusWidth - 1, _y, _y + _height - 1, this->backgroundColor);
     _x += surplusWidth;
   }
 
-  uint8_t lastPage = (uint8_t)((_height) / 8) + 1;
-  int8_t seekPageNum = lastPage - 2;
+  int8_t midSeekPageNum = (uint8_t)((_y + _height - 1) / 8) - (uint8_t)(_y / 8) - 1;
   uint8_t page_y = 0;
 
   //Rectangle setting required for drawing
@@ -107,7 +110,7 @@ uint8_t ttfSpiMonoColor::outputDisplay(uint8_t _x, uint8_t _y, uint8_t _height, 
   }
   page_y += firstPageBit;
 
-  for (int8_t page = 0; page < seekPageNum; page++) {
+  for (int8_t page = 0; page < midSeekPageNum; page++) {
     for (uint8_t pixel_x = 0; pixel_x < width; pixel_x++) {
       uint8_t fillData = 0b00000000;
       for (uint8_t bitCount = 0; bitCount < 8; bitCount++) {
@@ -130,7 +133,7 @@ uint8_t ttfSpiMonoColor::outputDisplay(uint8_t _x, uint8_t _y, uint8_t _height, 
     page_y += 8;
   }
 
-  uint8_t lastPageBit =  8 - ((_y + _height) % 8);
+  uint8_t lastPageBit =  (_y + _height - 1) % 8;
   for (uint8_t pixel_x = 0; pixel_x < width; pixel_x++) {
     uint8_t fillData = 0b00000000;
     for (uint8_t bitCount = 0; bitCount < lastPageBit; bitCount++) {
