@@ -40,5 +40,5 @@ class ssd1331_ttf : public ttfSpiFullColor {
 
   protected:
     virtual void set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) override;
-    virtual void fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2, uint16_t _color) override;
+    virtual void fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) override;
 };
