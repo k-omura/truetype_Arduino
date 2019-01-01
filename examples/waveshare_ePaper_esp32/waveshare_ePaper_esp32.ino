@@ -3,9 +3,8 @@
   2.9inch
 */
 
-//#include <FS.h>
+#include <FS.h>
 #include <SPI.h>
-#include "font.h"
 
 //#define PORTRAIT
 #define LANDSCAPE
