@@ -52,7 +52,7 @@
 
 //SPI pin settings
 SPIClass TFTspi = SPIClass();
-outputttf ttfout = outputttf(&TFTspi);
+ILI9341_spi_ttf ttfout = ILI9341_spi_ttf(&TFTspi);
 enum {
   TFT_CS = 15,
   TFT_RESET = 2,
