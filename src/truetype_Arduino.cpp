@@ -5,7 +5,7 @@
   https://developer.apple.com/fonts/TrueType-Reference-Manual/
 */
 
-#include "truetype.h"
+#include "truetype_Arduino.h"
 
 #if defined ESP32
 SDFS *truetypeClass::sd;
