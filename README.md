@@ -1,5 +1,5 @@
 # Display truetype font for Arduino  
-Read truetype(.ttf) from SD and generate bitmap.
+Read truetype(.ttf) from SD and generate bitmap. And draw the generated bitmap on the display.  
 
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
@@ -38,7 +38,8 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Mono display: Support Landscape only  
 
 # Confirmed controller  
-- ESP32
+- ESP32([Board](https://github.com/espressif/arduino-esp32))  
+- (in progress)STM32F103C8T6 Blue Pill([Board](https://github.com/stm32duino/Arduino_Core_STM32))  
 
 # Supported display  
 - Full color
