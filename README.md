@@ -37,6 +37,9 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
   - Because it writes directly to the display, it will erase the display nearby due to its structure. It can be solved by passing through a buffer.  
 - Mono display: Support Landscape only  
 
+# Confirmed controller  
+- ESP32
+
 # Supported display  
 - Full color
   - ILI9341 (SPI) [Demo](https://youtu.be/_-4tfssNTYE "ILI9341")    
