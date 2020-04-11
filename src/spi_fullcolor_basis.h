@@ -1,7 +1,6 @@
 #if !defined TRUETYPE_H
 #include "truetype_Arduino.h"
 #endif /* TRUETYPE_H */
-
 #define SPI_FULLCOLOR_H
 
 typedef union {
@@ -12,6 +11,14 @@ typedef union {
     unsigned int b : 5;
   } rgb;
 } rgb16_t;
+
+typedef union {
+  uint16_t raw;
+  struct {
+    unsigned int high : 8;
+    unsigned int low : 8;
+  } split;
+} transmit16;
 
 class ttfSpiFullColor {
   public:
@@ -39,8 +46,11 @@ class ttfSpiFullColor {
     uint16_t backgroundColor;
     bool underLine = false;
 
-    virtual uint8_t outputTFT(uint8_t _x, uint8_t y_, uint8_t _height, uint8_t monospacedWidth = 0);
+    void spiDMAHundler();
+    void dmaSetting();
+    void spiSendbuf(uint8_t *_buf, uint16_t _length);
 
+    virtual uint8_t outputTFT(uint8_t _x, uint8_t y_, uint8_t _height, uint8_t monospacedWidth = 0);
     virtual void set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) = 0;
     virtual void fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2);
 };
