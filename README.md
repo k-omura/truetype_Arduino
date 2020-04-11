@@ -26,7 +26,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Unable to read ttf file if file name is long(STM32F103).  
 - Faster glyph reading and bitmap generation.  
 - Decrease usage of SRAM.  
-- Handling of Bezier curve(Currently, provisional processing).  
+- Handling of Bezier curve(When exceeding 3 dimensions. Currently, provisional processing).  
 
 ## display  
 - Support for more various displays.  
