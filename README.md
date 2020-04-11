@@ -4,14 +4,12 @@ Read truetype(.ttf) from SD and generate bitmap. And draw the generated bitmap o
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
 
-Works on ESP32 only.  
 
 # Originality  
 ## truetype  
 - Separate programs in terms of the "generating a font bitmap" and the "displaying on the screen".  
 - Fixed problem that some font files could not be read.  
 - Handling Bezier curves.  
-- Changes for expansion to other than ESP32.  
 
 I divided the reading of the font file and the display on the screen. Which allows expansion to various displays.  
 In the original, an error occurred except for the font file verified by the author, so we made a correction.  
@@ -24,13 +22,14 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 # Future work (Issues)  
 ## truetype  
 - Correction that some files can not be read.  
-- Faster display of fonts.  
-- Decrease usage of SRAM(Only works with esp32).  
+- Unable to read ttf file if file name is long(STM32F103).  
+- Faster display of fonts(Algorithm for filling).  
+- Decrease usage of SRAM.  
 - Handling of Bezier curve(Currently, provisional processing).  
 
 ## display  
 - Support for more various displays.  
-- Faster display of fonts (especially complex characters such as kanji).  
+- Faster display of fonts (Implementation of SPI DMA is required).  
 - Make underline available.  
 - Align text to the right.  
 - Mono display: Text indication is not independent.  
@@ -39,7 +38,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 
 # Confirmed controller  
 - ESP32([Board](https://github.com/espressif/arduino-esp32))  
-- (in progress)STM32F103C8T6 Blue Pill([Board](https://github.com/stm32duino/Arduino_Core_STM32))  
+- STM32F103C8T6 Blue Pill([Board](https://github.com/stm32duino/Arduino_Core_STM32))  
 
 # Supported display  
 - Full color
@@ -57,4 +56,4 @@ Confirm the copyright of the font file. I did not distribute font files.
 
 It is based on the code by garretlab and changed.  
 https://github.com/garretlab/truetype  
-https://garretlab.web.fc2.com/arduino/lab/esp32_truetype  
+https://garretlab.web.fc2.com/arduino/lab/truetype/  
