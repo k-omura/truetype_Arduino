@@ -10,6 +10,7 @@ https://developer.apple.com/fonts/TrueType-Reference-Manual/
 - Separate programs in terms of the "generating a font bitmap" and the "displaying on the screen".  
 - Fixed problem that some font files could not be read.  
 - Handling Bezier curves.  
+- Faster filling process.  
 
 I divided the reading of the font file and the display on the screen. Which allows expansion to various displays.  
 In the original, an error occurred except for the font file verified by the author, so we made a correction.  
@@ -23,7 +24,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 ## truetype  
 - Correction that some files can not be read.  
 - Unable to read ttf file if file name is long(STM32F103).  
-- Faster display of fonts(Algorithm for filling).  
+- Faster glyph reading and bitmap generation.  
 - Decrease usage of SRAM.  
 - Handling of Bezier curve(Currently, provisional processing).  
 
