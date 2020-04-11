@@ -8,7 +8,7 @@
 
 //TFT command list
 //#define PORTRAIT
-#define LANDSCAPE
+//#define LANDSCAPE
 
 #define CMD_SLEEP_OUT 0x11
 #define CMD_DISPLAY_ON 0x29
@@ -39,6 +39,7 @@
 class ILI9341_spi_ttf : public ttfSpiFullColor {
   public:
     ILI9341_spi_ttf(SPIClass *_spi);
+    void fill_all();
 
   protected:
     void set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2);
