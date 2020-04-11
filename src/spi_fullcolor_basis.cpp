@@ -121,18 +121,28 @@ uint8_t ttfSpiFullColor::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint
 
   uint8_t spi_tx_buff[2 * width];
   transmit16 transmitData;
+  bool prevOnline = false;
+  bool insideNow = false;
 
   //Drawing character
   for (uint8_t pixel_y = 0; pixel_y < _height; pixel_y++) {
     for (uint8_t pixel_x = 0; pixel_x < width; pixel_x++) {
       uint16_t pixelColor;
 
-      if (font->getPixel(pixel_x, pixel_y, width)) {
+      transmitData.raw = this->backgroundColor; //Character background color
+      if (font->getPixel(pixel_x, pixel_y, width) == 1) {
         transmitData.raw = this->outlineColor; //Drawing outline of character
-      } else if (font->isInside(pixel_x, pixel_y)) {
+        prevOnline = true;
+        insideNow = false;
+      } else if (insideNow){
         transmitData.raw = this->insideColor; //Fill character
-      } else {
-        transmitData.raw = this->backgroundColor; //Character background color
+        prevOnline = false;
+      } else if (prevOnline) {
+        if(font->isInside(pixel_x, pixel_y)){
+          transmitData.raw = this->insideColor; //Fill character
+          insideNow = true;
+        }
+        prevOnline = false;
       }
 
       spi_tx_buff[2 * pixel_x] = transmitData.split.low;
