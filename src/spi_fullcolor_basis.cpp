@@ -5,6 +5,9 @@ SPIClass *ttfSpiFullColor::spi;
 //constructor
 ttfSpiFullColor::ttfSpiFullColor(SPIClass *_spi) {
   this->spi = _spi;
+#if defined(DMA_ENABLE)
+  //dmaSetting();
+#endif
 }
 
 void ttfSpiFullColor::setTruetype(truetypeClass *_ttf) {
@@ -69,6 +72,38 @@ uint8_t ttfSpiFullColor::displayMonospaced(uint8_t start_x, uint8_t start_y, con
   return start_x;
 }
 
+//SPI DMA interrupt hundler
+void ttfSpiFullColor::spiDMAHundler() {
+  /*while(spi->dev()->regs->SR & SPI_SR_BSY);
+  spi->dev()->regs->DR = 0;*/
+}
+
+void ttfSpiFullColor::dmaSetting() {
+  /*spi->dev()->regs->CR1 |=SPI_CR1_BIDIMODE_1_LINE|SPI_CR1_BIDIOE; // 送信のみ利用の設定
+  dma_init(DMA1);
+  dma_attach_interrupt(DMA1, DMA_CH3, &spiDMAHundler);
+  spi_tx_dma_enable(spi->.dev());*/
+}
+
+void ttfSpiFullColor::spiSendbuf(uint8_t *_buf, uint16_t _length) {
+#if defined(DMA_ENABLE)
+  /*dma_setup_transfer(
+    DMA1,DMA_CH3,         // SPI1用DMAチャンネル3を指定
+    &SPI.dev()->regs->DR, // 転送先アドレス    ：SPIデータレジスタを指定
+    DMA_SIZE_8BITS,       // 転送先データサイズ : 1バイト
+    _buf,          // 転送元アドレス     : SRAMアドレス
+    DMA_SIZE_8BITS,       // 転送先データサイズ : 1バイト
+    DMA_MINC_MODE|        // フラグ: サイクリック
+    DMA_FROM_MEM|         //         メモリから周辺機器、転送完了割り込み呼び出しあり
+    DMA_TRNS_CMPLT        //         転送完了割り込み呼び出しあり
+  );
+  dma_set_num_transfers(DMA1, DMA_CH3, _length); // 転送サイズ指定
+  dma_enable(DMA1, DMA_CH3);  // DMA有効化*/
+#else
+  spi->transfer(_buf, _length);
+#endif
+}
+
 uint8_t ttfSpiFullColor::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint8_t monospacedWidth) {
   //---Code for displaying a bitmap
   uint8_t width = font->generateBitmap(_height);
@@ -84,21 +119,26 @@ uint8_t ttfSpiFullColor::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint
   digitalWrite(this->Display_CS, LOW);
   set_rect(_x, (_x + width - 1), _y, (_y + _height - 1));
 
+  uint8_t spi_tx_buff[2 * width];
+  transmit16 transmitData;
+
   //Drawing character
   for (uint8_t pixel_y = 0; pixel_y < _height; pixel_y++) {
     for (uint8_t pixel_x = 0; pixel_x < width; pixel_x++) {
       uint16_t pixelColor;
 
       if (font->getPixel(pixel_x, pixel_y, width)) {
-        pixelColor = this->outlineColor; //Drawing outline of character
+        transmitData.raw = this->outlineColor; //Drawing outline of character
       } else if (font->isInside(pixel_x, pixel_y)) {
-        pixelColor = this->insideColor; //Fill character
+        transmitData.raw = this->insideColor; //Fill character
       } else {
-        pixelColor = this->backgroundColor; //Character background color
+        transmitData.raw = this->backgroundColor; //Character background color
       }
 
-      spi->transfer16(pixelColor);
+      spi_tx_buff[2 * pixel_x] = transmitData.split.low;
+      spi_tx_buff[2 * pixel_x + 1] = transmitData.split.high;
     }
+    spiSendbuf(spi_tx_buff, 2 * width);
   }
   digitalWrite(this->Display_CS, HIGH);
   //Drawing character end
@@ -111,12 +151,21 @@ uint8_t ttfSpiFullColor::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint
 }
 
 void ttfSpiFullColor::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) {
-  uint32_t repeat = (_x2 - _x1 + 1) * (_y2 - _y1 + 1);
+  uint16_t repeatCol = 2 * (_x2 - _x1 + 1);
+  uint16_t repeatPage = _y2 - _y1 + 1;
+  uint8_t spi_tx_buff[repeatCol];
+
+  transmit16 transmitData;
+  transmitData.raw = this->backgroundColor;
 
   digitalWrite(this->Display_CS, LOW);
   set_rect(_x1, _x2, _y1, _y2);
-  for (uint32_t i = 0; i < repeat; i++) {
-    spi->transfer16(this->backgroundColor);
+  for (uint16_t page = 0; page < repeatPage; page++) {
+    for (uint32_t col = 0; col < repeatCol; col += 2) {
+      spi_tx_buff[col] = transmitData.split.low;
+      spi_tx_buff[col + 1] = transmitData.split.high;
+    }
+    spiSendbuf(spi_tx_buff, repeatCol);
   }
   digitalWrite(this->Display_CS, HIGH);
 }
