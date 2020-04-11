@@ -40,9 +40,9 @@ enum {
 truetypeClass ipag = truetypeClass(&SD);
 //truetypeClass hiragino = truetypeClass(&SD);
 //truetypeClass helvetica = truetypeClass(&SD);
-//truetypeClass Avenir = truetypeClass(&SD);
+truetypeClass Avenir = truetypeClass(&SD);
 //truetypeClass TNR = truetypeClass(&SD);
-//truetypeClass Myriad = truetypeClass(&SD);
+truetypeClass Myriad = truetypeClass(&SD);
 //truetypeClass comic = truetypeClass(&SD);
 //truetypeClass Garamond = truetypeClass(&SD);
 const char *fontIpag = "/fonts/ipag.ttf";
@@ -99,9 +99,9 @@ void setup() {
   ipag.begin(SD_CS, fontIpag);
   //hiragino.begin(SD_CS, fontHiragino);
   //helvetica.begin(SD_CS, fontHelvetica);
-  //Avenir.begin(SD_CS, fontAvenir);
+  Avenir.begin(SD_CS, fontAvenir);
   //TNR.begin(SD_CS, fontTNR);
-  //Myriad.begin(SD_CS, fontMyriad);
+  Myriad.begin(SD_CS, fontMyriad);
   //comic.begin(SD_CS, fontComic);
   //Garamond.begin(SD_CS, fontGaramond);
   Serial.println("read fonts");
@@ -112,7 +112,7 @@ void setup() {
   ttfout.setSPIpin(TFT_CS, TFT_RESET, TFT_DC); //set SPI for ILI9341 pin (CS, RESET, DC)
   ttfout.setColor(TFT_RED, TFT_white, TFT_background); //set color (inside, outline, background)
   Serial.println("output ttf initialized");
-  
+
   //fill black
   ttfout.fill_all();
   Serial.println("fill black");
@@ -121,7 +121,7 @@ void setup() {
   ttfout.displayString(30, 30, L"埼玉県", 60, 20); //output string (start_x, start_y, string(wchar_t, 2byte), height of charctor, inter-character space)
   ttfout.displayString(30, 90, L"東京都", 60, 20);
   ttfout.displayString(30, 150, L"千葉県", 60, 20);
-  ttfout.displayString(30, 210, L"三鷹市", 60, 20);
+  ttfout.displayString(30, 210, L"大阪府", 60, 20);
   Serial.println("Hello message");
 
   delay(2000);
@@ -134,20 +134,19 @@ void setup() {
   ttfout.displayString(0, 0, "12369ab", 50, 5); //output string (start_x, start_y, string(char), height of charctor, inter-character space)
   //ttfout.setTruetype(&helvetica);
   ttfout.displayString(0, 50, "12369ab", 50, 5);
-  //ttfout.setTruetype(&Avenir);
+  ttfout.setTruetype(&Avenir);
   ttfout.displayString(0, 100, "12369ab", 50, 5);
   //ttfout.setTruetype(&TNR);
   ttfout.displayString(0, 150, "12369ab", 50, 5);
-  //ttfout.setTruetype(&Myriad);
+  ttfout.setTruetype(&Myriad);
   ttfout.displayString(0, 200, "12569ab", 50, 5);
-  Serial.println("Display in various fonts");
-
   /*
     ttfout.setTruetype(&Garamond); //read error
     ttfout.displayString(0, 300, "12569ab", 50, 5);
     ttfout.setTruetype(&comic); //read error
     ttfout.displayString(0, 250, "12569ab", 50, 5);
   */
+  Serial.println("Display in various fonts");
 
   delay(1000);
 
@@ -156,6 +155,17 @@ void setup() {
   Serial.println("fill black");
 
   ttfout.setTruetype(&ipag); //set font. use with "truetype.h"
+
+  //count up
+  for (int i = 0; i <= 100; i++) {
+    char number[4];
+    sprintf(number, "%03d", i);
+    ttfout.displayMonospaced(20, 20, number, 100, 60); //output string (start_x, start_y, string(char), height of charctor, Monospace value)
+  }
+
+  //fill black
+  ttfout.fill_all();
+  Serial.println("fill black");
 }
 
 //unicode start bit
@@ -177,7 +187,7 @@ void loop() {
   ttfout.displayString(30, 100, charctor, 200, 5);
   charctor[0]++;
 
-  delay(300);
+  //delay(300);
 }
 
 //---TFT
