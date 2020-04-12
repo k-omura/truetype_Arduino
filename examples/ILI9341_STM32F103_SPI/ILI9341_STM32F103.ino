@@ -9,13 +9,24 @@
 #include <SPI.h>
 #include <SD.h>
 
-#include "ILI9341_spi_ttf.h"
-
 //TFT config
 //#define PORTRAIT
 #define LANDSCAPE
 
-//#define DMA_ENABLE
+#if defined(PORTRAIT)
+#define MAC_CONFIG MAC_PORTRAIT
+#define TFT_WIDTH 320U
+#define TFT_HEIGHT 240U
+#define AdafruitTFTOrientation 1
+#else
+#define MAC_CONFIG MAC_LANDSCAPE
+#define TFT_WIDTH 240U
+#define TFT_HEIGHT 320U
+#define AdafruitTFTOrientation 0
+#endif
+
+#include "ILI9341_spi_ttf.h"
+//TFT config end
 
 //TFT color
 #define TFT_background 0b0000000000000000
@@ -24,11 +35,32 @@
 #define TFT_yellow 0b1110011110000000
 #define TFT_blue 0b0011000110011111
 #define TFT_green 0b0011011110000011
+
+#define TFT_NAVY        0x000F      /*   0,   0, 128 */
+#define TFT_DARKGREEN   0x03E0      /*   0, 128,   0 */
+#define TFT_DARKCYAN    0x03EF      /*   0, 128, 128 */
+#define TFT_MAROON      0x7800      /* 128,   0,   0 */
+#define TFT_PURPLE      0x780F      /* 128,   0, 128 */
+#define TFT_OLIVE       0x7BE0      /* 128, 128,   0 */
+#define TFT_LIGHTGREY   0xC618      /* 192, 192, 192 */
+#define TFT_DARKGREY    0x7BEF      /* 128, 128, 128 */
+#define TFT_CYAN        0x07FF      /*   0, 255, 255 */
+#define TFT_RED         0xF800      /* 255,   0,   0 */
+#define TFT_MAGENTA     0xF81F      /* 255,   0, 255 */
+#define TFT_ORANGE      0xFD20      /* 255, 165,   0 */
+#define TFT_GREENYELLOW 0xAFE5      /* 173, 255,  47 */
+#define TFT_PINK        0xF81F
 //TFT color end
 
 //SPI pin settings
+/*
+   MOSI PA7
+   MISO PA6
+   SCK  PA5
+   CS   PA4
+*/
 SPIClass TFTspi = SPIClass();
-ILI9341_spi_ttf ttfout = ILI9341_spi_ttf(&TFTspi);
+ILI9341_spi_ttf ttfout = ILI9341_spi_ttf(&TFTspi, TFT_WIDTH, TFT_HEIGHT);
 enum {
   TFT_CS = PA4,
   TFT_RESET = PA3,
@@ -72,6 +104,7 @@ void setup() {
   TFTspi.begin();
   TFTspi.setClockDivider(SPI_CLOCK_DIV2);
   TFTspi.setDataMode(SPI_MODE0);
+  ttfout.optimisationInit(); //use optimisationed SPI(SPI SCK, MOSI, MISO, CS pins cannot be changed from default)
   //SPI initilizetion end
 
   //LCD initilizetion
@@ -118,13 +151,20 @@ void setup() {
   Serial.println("fill black");
 
   //font output to ILI9341
-  ttfout.displayString(30, 30, L"埼玉県", 60, 20); //output string (start_x, start_y, string(wchar_t, 2byte), height of charctor, inter-character space)
-  ttfout.displayString(30, 90, L"東京都", 60, 20);
-  ttfout.displayString(30, 150, L"千葉県", 60, 20);
-  ttfout.displayString(30, 210, L"大阪府", 60, 20);
+  ttfout.displayString(35, 50, "Hello", 100, 10);
   Serial.println("Hello message");
 
-  delay(2000);
+  delay(1500);
+
+  //fill black
+  ttfout.fill_all();
+  Serial.println("fill black");
+
+  //Character enlargement animation
+  ttfout.setColor(TFT_green, TFT_blue, TFT_background); //set color (inside, outline, background)
+  for (uint16_t i = 10; i <= 100; i++) {
+    ttfout.displayString(5, 5, L"波", i, 0); //output string (start_x, start_y, string(wchar_t, 2byte), height of charctor, inter-character space)
+  }
 
   //fill black
   ttfout.fill_all();
@@ -133,12 +173,16 @@ void setup() {
   //font output to ILI9341
   ttfout.displayString(0, 0, "12369ab", 50, 5); //output string (start_x, start_y, string(char), height of charctor, inter-character space)
   //ttfout.setTruetype(&helvetica);
+  ttfout.setColor(TFT_DARKCYAN, TFT_white, TFT_background);
   ttfout.displayString(0, 50, "12369ab", 50, 5);
   ttfout.setTruetype(&Avenir);
+  ttfout.setColor(TFT_yellow, TFT_white, TFT_background);
   ttfout.displayString(0, 100, "12369ab", 50, 5);
   //ttfout.setTruetype(&TNR);
+  ttfout.setColor(TFT_blue, TFT_white, TFT_background);
   ttfout.displayString(0, 150, "12369ab", 50, 5);
   ttfout.setTruetype(&Myriad);
+  ttfout.setColor(TFT_ORANGE, TFT_white, TFT_background);
   ttfout.displayString(0, 200, "12569ab", 50, 5);
   /*
     ttfout.setTruetype(&Garamond); //read error
@@ -154,9 +198,8 @@ void setup() {
   ttfout.fill_all();
   Serial.println("fill black");
 
-  ttfout.setTruetype(&ipag); //set font. use with "truetype.h"
-
   //count up
+  ttfout.setTruetype(&Avenir);
   for (int i = 0; i <= 100; i++) {
     char number[4];
     sprintf(number, "%03d", i);
@@ -166,10 +209,22 @@ void setup() {
   //fill black
   ttfout.fill_all();
   Serial.println("fill black");
+
+  ttfout.setTruetype(&ipag);
+  ttfout.setColor(TFT_RED, TFT_white, TFT_background); //set color (inside, outline, background)
+  //font end
+  //ipag.end();
+  //hiragino.end();
+  //helvetica.end();
+  Avenir.end();
+  //TNR.end();
+  Myriad.end();
+  //comic.end();
+  //Garamond.end();
 }
 
 //unicode start bit
-uint32_t i = 0x21;
+uint32_t i = 0x4e9c;
 //0x21 number
 //0x4e9c kanji in Japanese fonts.
 
@@ -180,7 +235,7 @@ void loop() {
   ttfout.fill_all();
 
   //unicode counter
-  sprintf(number, "0x%x", i++);
+  sprintf(number, "0x%04X", i++);
   ttfout.displayString(10, 10, number, 70, 5);
 
   //display all unicode charactor
