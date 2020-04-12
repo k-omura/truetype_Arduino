@@ -25,7 +25,7 @@ truetypeClass::truetypeClass(SDClass *sd) {
 }
 #endif
 
-/* get uint8_t at the current position */
+// get uint8_t at the current position
 uint8_t truetypeClass::getUInt8t() {
   uint8_t x;
 
@@ -33,7 +33,7 @@ uint8_t truetypeClass::getUInt8t() {
   return x;
 }
 
-/* get int16_t at the current position */
+// get int16_t at the current position
 int16_t truetypeClass::getInt16t() {
   byte x[2];
 
@@ -41,7 +41,7 @@ int16_t truetypeClass::getInt16t() {
   return (x[0] << 8) | x[1];
 }
 
-/* get uint16_t at the current position */
+// get uint16_t at the current position
 uint16_t truetypeClass::getUInt16t() {
   byte x[2];
 
@@ -49,12 +49,26 @@ uint16_t truetypeClass::getUInt16t() {
   return (x[0] << 8) | x[1];
 }
 
-/* get uint32_t at the current position */
+// get uint32_t at the current position
 uint32_t truetypeClass::getUInt32t() {
   byte x[4];
 
   file.read(x, 4);
   return (x[0] << 24) | (x[1] << 16) | (x[2] << 8) | x[3];
+}
+
+//big <-> little edian exchange
+int16_t truetypeClass::swap_int16(int16_t _val) {
+    return (_val << 8) | ((_val >> 8) & 0xFF);
+}
+
+uint16_t truetypeClass::swap_uint16(uint16_t _val) {
+    return (_val << 8) | (_val >> 8 );
+}
+
+uint32_t truetypeClass::swap_uint32(uint32_t _val){
+    _val = ((_val << 8) & 0xFF00FF00 ) | ((_val >> 8) & 0xFF00FF );
+    return (_val << 16) | (_val >> 16);
 }
 
 /* calculate checksum */
@@ -70,7 +84,7 @@ uint32_t truetypeClass::calculateCheckSum(uint32_t offset, uint32_t length) {
   return checksum;
 }
 
-/* seek to the first position of the specified table name */
+// seek to the first position of the specified table name
 uint32_t truetypeClass::seekToTable(const char *name) {
   for (int i = 0; i < numTables; i++) {
     if (strcmp(table[i].name, name) == 0) {
@@ -81,7 +95,7 @@ uint32_t truetypeClass::seekToTable(const char *name) {
   return 0;
 }
 
-/* read table directory */
+// read table directory
 int truetypeClass::readTableDirectory(int checkCheckSum) {
   file.seek(numTablesPos);
   numTables = getUInt16t();
@@ -89,18 +103,18 @@ int truetypeClass::readTableDirectory(int checkCheckSum) {
 
   file.seek(tablePos);
   for (int i = 0; i < numTables; i++) {
-    for (int j = 0; j < 4; j++) {
-      table[i].name[j] = getUInt8t();
-    }
+    file.read(table[i].name, 4);
     table[i].name[4] = '\0';
-    table[i].checkSum = getUInt32t();
-    table[i].offset = getUInt32t();
-    table[i].length = getUInt32t();
+    file.read(&table[i].checkSum, 12);
+
+    table[i].checkSum = swap_uint32(table[i].checkSum);
+    table[i].offset = swap_uint32(table[i].offset);
+    table[i].length = swap_uint32(table[i].length);
   }
 
   if (checkCheckSum) {
     for (int i = 0; i < numTables; i++) {
-      if (strcmp(table[i].name, "head") != 0) { /* checksum of "head" is invalid */
+      if (strcmp(table[i].name, "head") != 0) { // checksum of "head" is invalid
         uint32_t c = calculateCheckSum(table[i].offset, table[i].length);
         if (table[i].checkSum != c) {
           return 0;
@@ -111,38 +125,34 @@ int truetypeClass::readTableDirectory(int checkCheckSum) {
   return 1;
 }
 
-/* read head table */
+// read head table
 void truetypeClass::readHeadTable() {
   for (int i = 0; i < numTables; i++) {
     if (strcmp(table[i].name, "head") == 0) {
       file.seek(table[i].offset);
+      file.read(&headTable, 54);
 
-      headTable.version = getUInt32t();
-      headTable.revision = getUInt32t();
-      headTable.checkSumAdjustment = getUInt32t();
-      headTable.magicNumber = getUInt32t();
-      headTable.flags = getUInt16t();
-      headTable.unitsPerEm = getUInt16t();
-      for (int j = 0; j < 8; j++) {
-        headTable.created[i] = getUInt8t();
-      }
-      for (int j = 0; j < 8; j++) {
-        headTable.modified[i] = getUInt8t();
-      }
-      xMin = headTable.xMin = getInt16t();
-      yMin = headTable.yMin = getInt16t();
-      xMax = headTable.xMax = getInt16t();
-      yMax = headTable.yMax = getInt16t();
-      headTable.macStyle = getUInt16t();
-      headTable.lowestRecPPEM = getUInt16t();
-      headTable.fontDirectionHint = getInt16t();
-      headTable.indexToLocFormat = getInt16t();
-      headTable.glyphDataFormat = getInt16t();
+      headTable.version = swap_uint32(headTable.version);
+      headTable.revision = swap_uint32(headTable.revision);
+      headTable.checkSumAdjustment = swap_uint32(headTable.checkSumAdjustment);
+      headTable.magicNumber = swap_uint32(headTable.magicNumber);
+      headTable.flags = swap_uint16(headTable.flags);
+      headTable.unitsPerEm = swap_uint16(headTable.unitsPerEm);
+
+      xMin = headTable.xMin = swap_int16(headTable.xMin);
+      yMin = headTable.yMin = swap_int16(headTable.yMin);
+      xMax = headTable.xMax = swap_int16(headTable.xMax);
+      yMax = headTable.yMax = swap_int16(headTable.yMax);
+      headTable.macStyle = swap_uint16(headTable.macStyle);
+      headTable.lowestRecPPEM = swap_uint16(headTable.lowestRecPPEM);
+      headTable.fontDirectionHint = swap_int16(headTable.fontDirectionHint);
+      headTable.indexToLocFormat = swap_int16(headTable.indexToLocFormat);
+      headTable.glyphDataFormat = swap_int16(headTable.glyphDataFormat);
     }
   }
 }
 
-/* get glyph offset */
+// get glyph offset
 uint32_t truetypeClass::getGlyphOffset(uint16_t index) {
   uint32_t offset = 0;
 
@@ -150,10 +160,12 @@ uint32_t truetypeClass::getGlyphOffset(uint16_t index) {
     if (strcmp(table[i].name, "loca") == 0) {
       if (headTable.indexToLocFormat == 1) {
         file.seek(table[i].offset + index * 4);
-        offset = getUInt32t();
+        file.read(&offset, 4);
+        offset = swap_uint32(offset);
       } else {
         file.seek(table[i].offset + index * 2);
-        offset = getUInt16t() * 2;
+        file.read(&offset, 2);
+        offset = swap_uint16(offset) * 2;
       }
       break;
     }
@@ -168,19 +180,22 @@ uint32_t truetypeClass::getGlyphOffset(uint16_t index) {
   return 0;
 }
 
-/* read cmap format 4 */
+// read cmap format 4
 int truetypeClass::readCmapFormat4() {
   file.seek(cmapFormat4.offset);
-  if ((cmapFormat4.format = getUInt16t()) != 4) {
+  file.read(&cmapFormat4, 14);
+
+  cmapFormat4.format = swap_uint16(cmapFormat4.format);
+  if (cmapFormat4.format != 4) {
     return 0;
   }
 
-  cmapFormat4.length = getUInt16t();
-  cmapFormat4.language = getUInt16t();
-  cmapFormat4.segCountX2 = getUInt16t();
-  cmapFormat4.searchRange = getUInt16t();
-  cmapFormat4.entrySelector = getUInt16t();
-  cmapFormat4.rangeShift = getUInt16t();
+  cmapFormat4.length = swap_uint16(cmapFormat4.length);
+  cmapFormat4.language = swap_uint16(cmapFormat4.language);
+  cmapFormat4.segCountX2 = swap_uint16(cmapFormat4.segCountX2);
+  cmapFormat4.searchRange = swap_uint16(cmapFormat4.searchRange);
+  cmapFormat4.entrySelector = swap_uint16(cmapFormat4.entrySelector);
+  cmapFormat4.rangeShift = swap_uint16(cmapFormat4.rangeShift);
   cmapFormat4.endCodeOffset = cmapFormat4.offset + 14;
   cmapFormat4.startCodeOffset = cmapFormat4.endCodeOffset + cmapFormat4.segCountX2 + 2;
   cmapFormat4.idDeltaOffset = cmapFormat4.startCodeOffset + cmapFormat4.segCountX2;
@@ -190,25 +205,33 @@ int truetypeClass::readCmapFormat4() {
   return 1;
 }
 
-/* read cmap */
+// read cmap
 int truetypeClass::readCmap() {
-  uint16_t platformId, platformSpecificId;
-  uint32_t cmapOffset, tableOffset;
+  struct readStruct{
+    uint16_t platformId;
+    uint16_t platformSpecificId;
+    uint32_t tableOffset;
+  } readStruct;
+
+  uint32_t cmapOffset;
   int foundMap = 0;
 
   if ((cmapOffset = seekToTable("cmap")) == 0) {
     return 0;
   }
 
-  cmapIndex.version = getUInt16t();
-  cmapIndex.numberSubtables = getUInt16t();
+  file.read(&cmapIndex, 4);
+  cmapIndex.version = swap_uint16(cmapIndex.version);
+  cmapIndex.numberSubtables = swap_uint16(cmapIndex.numberSubtables);
 
   for (int i = 0; i < cmapIndex.numberSubtables; i++) {
-    platformId = getUInt16t();
-    platformSpecificId = getUInt16t();
-    tableOffset = getUInt32t();
-    if ((platformId == 3) && (platformSpecificId == 1)) {
-      cmapFormat4.offset = cmapOffset + tableOffset;
+    file.read(&readStruct, 8);
+    readStruct.platformId = swap_uint16(readStruct.platformId);
+    readStruct.platformSpecificId = swap_uint16(readStruct.platformSpecificId);
+    readStruct.tableOffset = swap_uint32(readStruct.tableOffset);
+
+    if ((readStruct.platformId == 3) && (readStruct.platformSpecificId == 1)) {
+      cmapFormat4.offset = cmapOffset + readStruct.tableOffset;
       readCmapFormat4();
       foundMap = 1;
       break;
@@ -222,7 +245,7 @@ int truetypeClass::readCmap() {
   return 1;
 }
 
-/* convert character code to glyph id */
+// convert character code to glyph id
 uint16_t truetypeClass::codeToGlyphId(uint16_t code) {
   uint16_t start, end, idRangeOffset;
   int16_t idDelta;
@@ -250,6 +273,8 @@ uint16_t truetypeClass::codeToGlyphId(uint16_t code) {
 
         found = 1;
         break;
+      } else {
+        break; //Character code not included in collection.
       }
     }
   }
@@ -259,13 +284,15 @@ uint16_t truetypeClass::codeToGlyphId(uint16_t code) {
   return glyphId;
 }
 
-/* initialize */
+// initialize
 int truetypeClass::begin(int cs, const char * path, int checkCheckSum) {
   if (!sd->begin(cs)) {
+    Serial.println("SD card open fail.");
     return 0;
   }
 
   if ((file = sd->open(path)) == 0) {
+    Serial.println("file(in SD) open fail.");
     return 0;
   }
 
@@ -288,7 +315,7 @@ void truetypeClass::end() {
   file.close();
 }
 
-/* read coords */
+// read coords
 void truetypeClass::readCoords(char xy) {
   int value = 0;
   int shortFlag, sameFlag;
@@ -320,7 +347,7 @@ void truetypeClass::readCoords(char xy) {
   }
 }
 
-/* insert a point at the specified position */
+// insert a point at the specified position
 void truetypeClass::insertGlyph(int contour, int position, int16_t x, int16_t y, uint8_t flag) {
   glyph.numberOfPoints++;
   glyph.points = (ttPoint_t *)realloc(glyph.points, sizeof(ttPoint_t) * glyph.numberOfPoints);
@@ -353,8 +380,9 @@ int truetypeClass::readSimpleGlyph() {
 
   glyph.endPtsOfContours = (uint16_t *)malloc((sizeof(uint16_t) * glyph.numberOfContours));
 
+  file.read(glyph.endPtsOfContours, 2 * glyph.numberOfContours);
   for (int i = 0; i < glyph.numberOfContours; i++) {
-    glyph.endPtsOfContours[i] = getUInt16t();
+    glyph.endPtsOfContours[i] = swap_uint16(glyph.endPtsOfContours[i]);
   }
 
   #if defined ESP32
@@ -398,11 +426,13 @@ int truetypeClass::readSimpleGlyph() {
 int truetypeClass::readGlyph(uint16_t _code) {
   uint32_t offset = getGlyphOffset(codeToGlyphId(_code));
   file.seek(offset);
-  glyph.numberOfContours = getInt16t();
-  glyph.xMin = getInt16t();
-  glyph.yMin = getInt16t();
-  glyph.xMax = getInt16t();
-  glyph.yMax = getInt16t();
+  file.read(&glyph, 10);
+
+  glyph.numberOfContours = swap_int16(glyph.numberOfContours);
+  glyph.xMin = swap_int16(glyph.xMin);
+  glyph.yMin = swap_int16(glyph.yMin);
+  glyph.xMax = swap_int16(glyph.xMax);
+  glyph.yMax = swap_int16(glyph.yMax);
 
   if (glyph.numberOfContours != -1) {
     readSimpleGlyph();
@@ -513,7 +543,6 @@ uint8_t truetypeClass::generateBitmap(uint16_t _height) {
   return width;
 }
 
-
 void truetypeClass::freeBitmap() {
   free(this->bitmap);
   freePoints();
@@ -521,7 +550,7 @@ void truetypeClass::freeBitmap() {
   freeEndPoints();
 }
 
-void truetypeClass::addPixel(int _x0, int _y0, int _width, int _height) {
+void truetypeClass::addPixel(int _x0, int _y0, int _width) {
   this->bitmap[(_x0 / 8) + (((_width + 7) / 8) * _y0)] |= (1 << (7 - _x0 % 8));
 }
 
@@ -550,7 +579,7 @@ void truetypeClass::addLine(int _x0, int _y0, int _x1, int _y1, int _width, int 
   err = dx - dy;
 
   while (1) {
-    addPixel(_x0, _y0, _width, _height);
+    addPixel(_x0, _y0, _width);
     if ((_x0 == _x1) && (_y0 == _y1)) {
       break;
     }
@@ -644,6 +673,12 @@ int truetypeClass::isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate
   return ((_p1.x - _p0.x) * (_point.y - _p0.y) - (_point.x - _p0.x) * (_p1.y - _p0.y));
 }
 
-int truetypeClass::getPixel(int _x0, int _y0, int _width) {
-  return (this->bitmap[(_x0 / 8) + (((_width + 7) / 8) * _y0)]) & (1 << (7 - _x0 % 8));
+int truetypeClass::getPixel(int _x, int _y, uint8_t _width) {
+  int pixel = 0;
+  if((this->bitmap[(_x / 8) + (((_width + 7) / 8) * _y)]) & (1 << (7 - _x % 8))){
+    pixel = 1;
+  } /*else if((this->bitmap[(_x / 8) + (((_width + 7) / 8) * _y)]) & (1 << (7 - _x % 8))){
+    pixel = 2;
+  }*/
+  return pixel;
 }
