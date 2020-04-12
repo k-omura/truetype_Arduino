@@ -53,6 +53,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 It is common to use the SPI for loading the SD card. For that reason, the work of the I2C display is not prioritized.  
 
 # Note  
+Feel free to post any bugs or ideas for fixes and improvements!  
 Confirm the copyright of the font file. I did not distribute font files.  
 
 It is based on the code by garretlab and changed.  
