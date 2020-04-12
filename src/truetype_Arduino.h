@@ -123,8 +123,8 @@ class truetypeClass {
     uint8_t *bitmap;
     uint8_t generateBitmap(uint16_t height);
     void freeBitmap();
-    int getPixel(int x0, int y0, int width);
-    bool isInside(int x, int y);
+    int getPixel(int _x, int _y, uint8_t _width);
+    bool isInside(int _x, int _y);
 
   private:
     #if defined ESP32
@@ -148,6 +148,9 @@ class truetypeClass {
     int16_t getInt16t();
     uint16_t getUInt16t();
     uint32_t getUInt32t();
+    int16_t swap_int16(int16_t _val);
+    uint16_t swap_uint16(uint16_t _val);
+    uint32_t swap_uint32(uint32_t _val);
     uint32_t calculateCheckSum(uint32_t offset, uint32_t length);
     uint32_t seekToTable(const char *name);
     int readTableDirectory(int checkCheckSum);
@@ -168,7 +171,7 @@ class truetypeClass {
     int *endPoints;
     int numEndPoints;
 
-    void addPixel(int _x0, int _y0, int _width, int _height);
+    void addPixel(int _x0, int _y0, int _width);
     void addLine(int _x0, int _y0, int _x1, int _y1, int _width, int _height);
     void addPoint(int _x, int _y);
     void freePoints();
