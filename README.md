@@ -30,7 +30,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 
 ## display  
 - Support for more various displays.  
-- Faster display of fonts (Implementation of SPI DMA is required).  
+- Faster display of fonts (SPI optimization is required).  
 - Make underline available.  
 - Align text to the right.  
 - Mono display: Text indication is not independent.  
@@ -39,7 +39,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 
 # Confirmed controller  
 - ESP32([Board](https://github.com/espressif/arduino-esp32))  
-- STM32F103C8T6 Blue Pill([Board](https://github.com/stm32duino/Arduino_Core_STM32))  
+- STM32F103C8T6 (SPI optimized) ([Board](https://github.com/stm32duino/Arduino_Core_STM32))  
 
 # Supported display  
 - Full color
