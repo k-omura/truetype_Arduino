@@ -1,7 +1,10 @@
 #include "SSD1331_ttf.h"
 
 //constructor
-ssd1331_ttf::ssd1331_ttf(SPIClass *_spi) : ttfSpiFullColor(_spi) {};
+ssd1331_ttf::ssd1331_ttf(SPIClass *_spi, uint16_t _tftWidth, uint16_t _tftHeifht) : ttfSpiFullColor(_spi) {
+  this->tftWidth = _tftWidth;
+  this->tftHeifht = _tftHeifht;
+};
 
 //Rectangle setting required for drawing SSD1331
 void ssd1331_ttf::set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) {
