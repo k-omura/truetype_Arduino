@@ -1,7 +1,10 @@
 #include "ILI9341_spi_ttf.h"
 
 //constructor
-ILI9341_spi_ttf::ILI9341_spi_ttf(SPIClass *_spi) : ttfSpiFullColor(_spi) {};
+ILI9341_spi_ttf::ILI9341_spi_ttf(SPIClass *_spi, uint16_t _tftWidth, uint16_t _tftHeifht) : ttfSpiFullColor(_spi) {
+  this->tftWidth = _tftWidth;
+  this->tftHeifht = _tftHeifht;
+};
 
 void ILI9341_spi_ttf::fill_all() {
   fill_rect(0, tftWidth, 0, tftHeifht);
