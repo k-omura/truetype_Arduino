@@ -22,23 +22,11 @@
 #define MAC_LANDSCAPE 0x48
 #define COLMOD_16BIT 0x55
 #define COLMOD_18BIT 0x66
-
-#if defined(PORTRAIT)
-#define MAC_CONFIG MAC_PORTRAIT
-#define tftWidth 320
-#define tftHeifht 240
-#define AdafruitTFTOrientation 1
-#else
-#define MAC_CONFIG MAC_LANDSCAPE
-#define tftWidth 240
-#define tftHeifht 320
-#define AdafruitTFTOrientation 0
-#endif
 //TFT command list end
 
 class ILI9341_spi_ttf : public ttfSpiFullColor {
   public:
-    ILI9341_spi_ttf(SPIClass *_spi);
+    ILI9341_spi_ttf(SPIClass *_spi, uint16_t _tftWidth, uint16_t _tftHeifht);
     void fill_all();
 
   protected:
