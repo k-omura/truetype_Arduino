@@ -1,13 +1,17 @@
 #include "spi_fullcolor_basis.h"
 
+
+
 SPIClass *ttfSpiFullColor::spi;
 
 //constructor
 ttfSpiFullColor::ttfSpiFullColor(SPIClass *_spi) {
   this->spi = _spi;
-#if defined(DMA_ENABLE)
-  //dmaSetting();
-#endif
+}
+
+void ttfSpiFullColor::optimisationInit() {
+  this->optimisation = true;
+  optimisationSetting();
 }
 
 void ttfSpiFullColor::setTruetype(truetypeClass *_ttf) {
@@ -30,7 +34,7 @@ void ttfSpiFullColor::setUnderLine(bool _allowUnderLine) {
   this->underLine = _allowUnderLine;
 }
 
-uint8_t ttfSpiFullColor::displayString(uint8_t start_x, uint8_t start_y, const char character[], uint8_t characterSize, uint8_t characterSpace) {
+uint8_t ttfSpiFullColor::displayString(uint16_t start_x, uint16_t start_y, const char character[], uint16_t characterSize, uint8_t characterSpace) {
   uint8_t c = 0;
 
   while (character[c]) {
@@ -44,7 +48,7 @@ uint8_t ttfSpiFullColor::displayString(uint8_t start_x, uint8_t start_y, const c
   return start_x;
 }
 
-uint8_t ttfSpiFullColor::displayString(uint8_t start_x, uint8_t start_y, const wchar_t character[], uint8_t characterSize, uint8_t characterSpace) {
+uint8_t ttfSpiFullColor::displayString(uint16_t start_x, uint16_t start_y, const wchar_t character[], uint16_t characterSize, uint8_t characterSpace) {
   uint8_t c = 0;
 
   while (character[c]) {
@@ -58,7 +62,7 @@ uint8_t ttfSpiFullColor::displayString(uint8_t start_x, uint8_t start_y, const w
   return start_x;
 }
 
-uint8_t ttfSpiFullColor::displayMonospaced(uint8_t start_x, uint8_t start_y, const char character[], uint8_t characterSize, uint8_t monospacedWidth) {
+uint8_t ttfSpiFullColor::displayMonospaced(uint16_t start_x, uint16_t start_y, const char character[], uint16_t characterSize, uint8_t monospacedWidth) {
   uint8_t c = 0;
 
   while (character[c]) {
@@ -78,39 +82,56 @@ void ttfSpiFullColor::spiDMAHundler() {
   spi->dev()->regs->DR = 0;*/
 }
 
-void ttfSpiFullColor::dmaSetting() {
-  /*spi->dev()->regs->CR1 |=SPI_CR1_BIDIMODE_1_LINE|SPI_CR1_BIDIOE; // 送信のみ利用の設定
-  dma_init(DMA1);
-  dma_attach_interrupt(DMA1, DMA_CH3, &spiDMAHundler);
-  spi_tx_dma_enable(spi->.dev());*/
-}
+void ttfSpiFullColor::optimisationSetting() {
+#if defined(_VARIANT_ARDUINO_STM32_)
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
-void ttfSpiFullColor::spiSendbuf(uint8_t *_buf, uint16_t _length) {
-#if defined(DMA_ENABLE)
-  /*dma_setup_transfer(
-    DMA1,DMA_CH3,         // SPI1用DMAチャンネル3を指定
-    &SPI.dev()->regs->DR, // 転送先アドレス    ：SPIデータレジスタを指定
-    DMA_SIZE_8BITS,       // 転送先データサイズ : 1バイト
-    _buf,          // 転送元アドレス     : SRAMアドレス
-    DMA_SIZE_8BITS,       // 転送先データサイズ : 1バイト
-    DMA_MINC_MODE|        // フラグ: サイクリック
-    DMA_FROM_MEM|         //         メモリから周辺機器、転送完了割り込み呼び出しあり
-    DMA_TRNS_CMPLT        //         転送完了割り込み呼び出しあり
-  );
-  dma_set_num_transfers(DMA1, DMA_CH3, _length); // 転送サイズ指定
-  dma_enable(DMA1, DMA_CH3);  // DMA有効化*/
-#else
-  spi->transfer(_buf, _length);
+  /* DMA interrupt init */
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK){
+    Error_Handler();
+  }
+
+  Serial.println("DMA Set!!!!!!!!!!!");
 #endif
 }
 
-uint8_t ttfSpiFullColor::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint8_t monospacedWidth) {
+void ttfSpiFullColor::spiSendbuf(uint8_t *_buf, uint16_t _length) {
+  if(this->optimisation){
+    #if defined(_VARIANT_ARDUINO_STM32_)
+      //while (__HAL_DMA_GET_COUNTER(&hdma_spi1_tx) > 0);
+      HAL_SPI_Init(&hspi1);
+      //HAL_SPI_Transmit_DMA(&hspi1, _buf, _length);
+      HAL_SPI_Transmit(&hspi1, _buf, _length, 1000);
+    #endif
+  }else{
+    spi->transfer(_buf, _length);
+  }
+}
+
+uint8_t ttfSpiFullColor::outputTFT(uint16_t _x, uint16_t _y, uint16_t _height, uint8_t monospacedWidth) {
   //---Code for displaying a bitmap
-  uint8_t width = font->generateBitmap(_height);
+  uint16_t width = font->generateBitmap(_height);
 
   //In case of the monospaced, align to the right in the frame
   if (monospacedWidth) {
-    uint8_t surplusWidth = monospacedWidth - width;
+    uint16_t surplusWidth = monospacedWidth - width;
     fill_rect(_x, _x + surplusWidth - 1, _y, _y + _height - 1);
     _x += surplusWidth;
   }
@@ -125,8 +146,8 @@ uint8_t ttfSpiFullColor::outputTFT(uint8_t _x, uint8_t _y, uint8_t _height, uint
   bool insideNow = false;
 
   //Drawing character
-  for (uint8_t pixel_y = 0; pixel_y < _height; pixel_y++) {
-    for (uint8_t pixel_x = 0; pixel_x < width; pixel_x++) {
+  for (uint16_t pixel_y = 0; pixel_y < _height; pixel_y++) {
+    for (uint16_t pixel_x = 0; pixel_x < width; pixel_x++) {
       uint16_t pixelColor;
 
       transmitData.raw = this->backgroundColor; //Character background color
