@@ -27,8 +27,7 @@
 class ILI9341_spi_ttf : public ttfSpiFullColor {
   public:
     ILI9341_spi_ttf(SPIClass *_spi, uint16_t _tftWidth, uint16_t _tftHeifht);
-    void fill_all();
 
   protected:
-    void set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2);
+    void set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) override;
 };
