@@ -35,6 +35,7 @@ class ttfSpiFullColor {
     uint8_t displayString(uint16_t start_x, uint16_t start_y, const wchar_t character[], uint16_t characterSize, uint8_t characterSpace);
     uint8_t displayMonospaced(uint16_t start_x, uint16_t start_y, const char character[], uint16_t characterSize, uint8_t monospacedWidth);
 
+    void fill_all();
   protected:
     static SPIClass *spi;
 
