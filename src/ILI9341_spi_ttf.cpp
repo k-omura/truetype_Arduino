@@ -6,10 +6,6 @@ ILI9341_spi_ttf::ILI9341_spi_ttf(SPIClass *_spi, uint16_t _tftWidth, uint16_t _t
   this->tftHeifht = _tftHeifht;
 };
 
-void ILI9341_spi_ttf::fill_all() {
-  fill_rect(0, tftWidth, 0, tftHeifht);
-}
-
 //Rectangle setting required for drawing ILI9341
 void ILI9341_spi_ttf::set_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16_t _y2) {
   uint8_t spi_tx_buff[4];
