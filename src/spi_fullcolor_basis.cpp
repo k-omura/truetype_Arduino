@@ -42,7 +42,9 @@ uint8_t ttfSpiFullColor::displayString(uint16_t start_x, uint16_t start_y, const
     font->adjustGlyph();
     start_x += outputTFT(start_x, start_y, characterSize);
     start_x += characterSpace; //space between charctor
-    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize - 1);
+    if(characterSpace){
+      fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize - 1);
+    }
     c++;
   }
   return start_x;
@@ -56,7 +58,9 @@ uint8_t ttfSpiFullColor::displayString(uint16_t start_x, uint16_t start_y, const
     font->adjustGlyph();
     start_x += outputTFT(start_x, start_y, characterSize);
     start_x += characterSpace; //space between charctor
-    fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize - 1);
+    if(characterSpace){
+      fill_rect(start_x - characterSpace, start_x - 1, start_y, start_y + characterSize - 1);
+    }
     c++;
   }
   return start_x;
@@ -99,7 +103,7 @@ void ttfSpiFullColor::optimisationSetting() {
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;//MIN: SSD1331 64, ILI9341 8
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -108,7 +112,7 @@ void ttfSpiFullColor::optimisationSetting() {
     Error_Handler();
   }
 
-  Serial.println("DMA Set!!!!!!!!!!!");
+  //Serial.println("SPI optimisation set!!!!!!!!!!!");
 #endif
 }
 
@@ -199,4 +203,8 @@ void ttfSpiFullColor::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16
     spiSendbuf(spi_tx_buff, repeatCol);
   }
   digitalWrite(this->Display_CS, HIGH);
+}
+
+void ttfSpiFullColor::fill_all() {
+  fill_rect(0, this->tftWidth - 1, 0, this->tftHeifht - 1);
 }
