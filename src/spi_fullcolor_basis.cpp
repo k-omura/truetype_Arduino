@@ -206,5 +206,5 @@ void ttfSpiFullColor::fill_rect(uint16_t _x1, uint16_t _x2, uint16_t _y1, uint16
 }
 
 void ttfSpiFullColor::fill_all() {
-  fill_rect(0, this->tftWidth - 1, 0, this->tftHeifht - 1);
+  fill_rect(0, this->tftWidth, 0, this->tftHeifht);
 }
