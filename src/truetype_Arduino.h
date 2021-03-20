@@ -7,10 +7,6 @@
 
 #define TRUETYPE_H
 
-#if !defined __SD_H__
-#include "SD.h"
-#endif /*__SD_H__*/
-
 #if !defined _SPI_H_INCLUDED
 #include "SPI.h"
 #endif /*_SPI_H_INCLUDED*/
@@ -104,15 +100,11 @@ typedef struct {
 
 class truetypeClass {
   public:
-    #if defined ESP32
-    truetypeClass(SDFS *sd);
-    #else
-    truetypeClass(SDClass *sd);
-    #endif
+    truetypeClass(File file);
 
     int xMin, xMax, yMin, yMax;
 
-    int begin(int cs, const char * path, int checkCheckSum = 0);
+    int begin(int checkCheckSum = 0);
     void end();
     int readGlyph(uint16_t code);
     void adjustGlyph();
@@ -126,19 +118,18 @@ class truetypeClass {
     int getPixel(int _x, int _y, uint8_t _width);
     bool isInside(int _x, int _y);
 
+    //write user bitmap
+    void setStringSettings(uint16_t _characterSize, uint16_t _characterSpace, uint16_t _displayWidth, uint8_t *_bitmap);
+    void stringBitmap(int _x, int _y, const wchar_t _character[]);
+
   private:
-    #if defined ESP32
-    static SDFS *sd;
-    #else
-    static SDClass *sd;
-    #endif
+    File file;
 
     const int numTablesPos = 4;
     const int tablePos = 12;
 
     uint16_t numTables;
     ttTable_t *table;
-    File file;
     ttHeadttTable_t headTable;
     ttCmapIndex_t cmapIndex;
     ttCmapEncoding_t *cmapEncoding;
@@ -180,4 +171,12 @@ class truetypeClass {
     void addEndPoint(int _ep);
     void freeEndPoints();
     int isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate_t &_point);
+
+    //write user bitmap
+    uint16_t characterSize = 20;
+    uint16_t characterSpace = 5;
+    uint16_t displayWidth = 480;
+    uint16_t displayWidth8;
+    uint8_t *userBitmap;
+    void addPixelBitmap(uint16_t _x, uint16_t _y, bool _bitVal);
 };
