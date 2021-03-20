@@ -1,5 +1,5 @@
 # Display truetype font for Arduino  
-Read truetype(.ttf) from SD and generate bitmap. And draw the generated bitmap on the display.  
+Read truetype(.ttf) from FS(ex. SD/SPIFFS) and generate bitmap. And draw the generated bitmap on the display.  
 
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
@@ -50,6 +50,8 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
   - SSD1306 (SPI) [Demo](https://youtu.be/WLiS6KDrS6Q "SSD1306")  
   - Waveshare e-Paper 2.9inch (SPI) [Demo](https://youtu.be/qs_nOYCx91o "e-Paper")  
 
+See also the ILI9341 ESP32's exclusive code for any display.  
+The font file is read in the same way as ILI9341, but the example code on other displays has not been updated yet.  
 It is common to use the SPI for loading the SD card. For that reason, the work of the I2C display is not prioritized.  
 
 # Note  
