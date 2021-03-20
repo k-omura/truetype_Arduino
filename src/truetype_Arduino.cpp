@@ -7,25 +7,13 @@
 
 #include "truetype_Arduino.h"
 
-#if defined ESP32
-SDFS *truetypeClass::sd;
-#else
-SDClass *truetypeClass::sd;
-#endif
-
 /* constructor */
 
-#if defined ESP32
-truetypeClass::truetypeClass(SDFS *sd) {
-  this->sd = sd;
+truetypeClass::truetypeClass(File _file) {
+  this->file = _file;
 }
-#else
-truetypeClass::truetypeClass(SDClass *sd) {
-  this->sd = sd;
-}
-#endif
 
-// get uint8_t at the current position
+/* get uint8_t at the current position */
 uint8_t truetypeClass::getUInt8t() {
   uint8_t x;
 
@@ -33,7 +21,7 @@ uint8_t truetypeClass::getUInt8t() {
   return x;
 }
 
-// get int16_t at the current position
+/* get int16_t at the current position */
 int16_t truetypeClass::getInt16t() {
   byte x[2];
 
@@ -41,7 +29,7 @@ int16_t truetypeClass::getInt16t() {
   return (x[0] << 8) | x[1];
 }
 
-// get uint16_t at the current position
+/* get uint16_t at the current position */
 uint16_t truetypeClass::getUInt16t() {
   byte x[2];
 
@@ -49,26 +37,12 @@ uint16_t truetypeClass::getUInt16t() {
   return (x[0] << 8) | x[1];
 }
 
-// get uint32_t at the current position
+/* get uint32_t at the current position */
 uint32_t truetypeClass::getUInt32t() {
   byte x[4];
 
   file.read(x, 4);
   return (x[0] << 24) | (x[1] << 16) | (x[2] << 8) | x[3];
-}
-
-//big <-> little edian exchange
-int16_t truetypeClass::swap_int16(int16_t _val) {
-    return (_val << 8) | ((_val >> 8) & 0xFF);
-}
-
-uint16_t truetypeClass::swap_uint16(uint16_t _val) {
-    return (_val << 8) | (_val >> 8 );
-}
-
-uint32_t truetypeClass::swap_uint32(uint32_t _val){
-    _val = ((_val << 8) & 0xFF00FF00 ) | ((_val >> 8) & 0xFF00FF );
-    return (_val << 16) | (_val >> 16);
 }
 
 /* calculate checksum */
@@ -84,7 +58,7 @@ uint32_t truetypeClass::calculateCheckSum(uint32_t offset, uint32_t length) {
   return checksum;
 }
 
-// seek to the first position of the specified table name
+/* seek to the first position of the specified table name */
 uint32_t truetypeClass::seekToTable(const char *name) {
   for (int i = 0; i < numTables; i++) {
     if (strcmp(table[i].name, name) == 0) {
@@ -95,7 +69,7 @@ uint32_t truetypeClass::seekToTable(const char *name) {
   return 0;
 }
 
-// read table directory
+/* read table directory */
 int truetypeClass::readTableDirectory(int checkCheckSum) {
   file.seek(numTablesPos);
   numTables = getUInt16t();
@@ -103,18 +77,18 @@ int truetypeClass::readTableDirectory(int checkCheckSum) {
 
   file.seek(tablePos);
   for (int i = 0; i < numTables; i++) {
-    file.read(table[i].name, 4);
+    for (int j = 0; j < 4; j++) {
+      table[i].name[j] = getUInt8t();
+    }
     table[i].name[4] = '\0';
-    file.read(&table[i].checkSum, 12);
-
-    table[i].checkSum = swap_uint32(table[i].checkSum);
-    table[i].offset = swap_uint32(table[i].offset);
-    table[i].length = swap_uint32(table[i].length);
+    table[i].checkSum = getUInt32t();
+    table[i].offset = getUInt32t();
+    table[i].length = getUInt32t();
   }
 
   if (checkCheckSum) {
     for (int i = 0; i < numTables; i++) {
-      if (strcmp(table[i].name, "head") != 0) { // checksum of "head" is invalid
+      if (strcmp(table[i].name, "head") != 0) { /* checksum of "head" is invalid */
         uint32_t c = calculateCheckSum(table[i].offset, table[i].length);
         if (table[i].checkSum != c) {
           return 0;
@@ -125,34 +99,38 @@ int truetypeClass::readTableDirectory(int checkCheckSum) {
   return 1;
 }
 
-// read head table
+/* read head table */
 void truetypeClass::readHeadTable() {
   for (int i = 0; i < numTables; i++) {
     if (strcmp(table[i].name, "head") == 0) {
       file.seek(table[i].offset);
-      file.read(&headTable, 54);
 
-      headTable.version = swap_uint32(headTable.version);
-      headTable.revision = swap_uint32(headTable.revision);
-      headTable.checkSumAdjustment = swap_uint32(headTable.checkSumAdjustment);
-      headTable.magicNumber = swap_uint32(headTable.magicNumber);
-      headTable.flags = swap_uint16(headTable.flags);
-      headTable.unitsPerEm = swap_uint16(headTable.unitsPerEm);
-
-      xMin = headTable.xMin = swap_int16(headTable.xMin);
-      yMin = headTable.yMin = swap_int16(headTable.yMin);
-      xMax = headTable.xMax = swap_int16(headTable.xMax);
-      yMax = headTable.yMax = swap_int16(headTable.yMax);
-      headTable.macStyle = swap_uint16(headTable.macStyle);
-      headTable.lowestRecPPEM = swap_uint16(headTable.lowestRecPPEM);
-      headTable.fontDirectionHint = swap_int16(headTable.fontDirectionHint);
-      headTable.indexToLocFormat = swap_int16(headTable.indexToLocFormat);
-      headTable.glyphDataFormat = swap_int16(headTable.glyphDataFormat);
+      headTable.version = getUInt32t();
+      headTable.revision = getUInt32t();
+      headTable.checkSumAdjustment = getUInt32t();
+      headTable.magicNumber = getUInt32t();
+      headTable.flags = getUInt16t();
+      headTable.unitsPerEm = getUInt16t();
+      for (int j = 0; j < 8; j++) {
+        headTable.created[i] = getUInt8t();
+      }
+      for (int j = 0; j < 8; j++) {
+        headTable.modified[i] = getUInt8t();
+      }
+      xMin = headTable.xMin = getInt16t();
+      yMin = headTable.yMin = getInt16t();
+      xMax = headTable.xMax = getInt16t();
+      yMax = headTable.yMax = getInt16t();
+      headTable.macStyle = getUInt16t();
+      headTable.lowestRecPPEM = getUInt16t();
+      headTable.fontDirectionHint = getInt16t();
+      headTable.indexToLocFormat = getInt16t();
+      headTable.glyphDataFormat = getInt16t();
     }
   }
 }
 
-// get glyph offset
+/* get glyph offset */
 uint32_t truetypeClass::getGlyphOffset(uint16_t index) {
   uint32_t offset = 0;
 
@@ -160,12 +138,10 @@ uint32_t truetypeClass::getGlyphOffset(uint16_t index) {
     if (strcmp(table[i].name, "loca") == 0) {
       if (headTable.indexToLocFormat == 1) {
         file.seek(table[i].offset + index * 4);
-        file.read(&offset, 4);
-        offset = swap_uint32(offset);
+        offset = getUInt32t();
       } else {
         file.seek(table[i].offset + index * 2);
-        file.read(&offset, 2);
-        offset = swap_uint16(offset) * 2;
+        offset = getUInt16t() * 2;
       }
       break;
     }
@@ -180,22 +156,19 @@ uint32_t truetypeClass::getGlyphOffset(uint16_t index) {
   return 0;
 }
 
-// read cmap format 4
+/* read cmap format 4 */
 int truetypeClass::readCmapFormat4() {
   file.seek(cmapFormat4.offset);
-  file.read(&cmapFormat4, 14);
-
-  cmapFormat4.format = swap_uint16(cmapFormat4.format);
-  if (cmapFormat4.format != 4) {
+  if ((cmapFormat4.format = getUInt16t()) != 4) {
     return 0;
   }
 
-  cmapFormat4.length = swap_uint16(cmapFormat4.length);
-  cmapFormat4.language = swap_uint16(cmapFormat4.language);
-  cmapFormat4.segCountX2 = swap_uint16(cmapFormat4.segCountX2);
-  cmapFormat4.searchRange = swap_uint16(cmapFormat4.searchRange);
-  cmapFormat4.entrySelector = swap_uint16(cmapFormat4.entrySelector);
-  cmapFormat4.rangeShift = swap_uint16(cmapFormat4.rangeShift);
+  cmapFormat4.length = getUInt16t();
+  cmapFormat4.language = getUInt16t();
+  cmapFormat4.segCountX2 = getUInt16t();
+  cmapFormat4.searchRange = getUInt16t();
+  cmapFormat4.entrySelector = getUInt16t();
+  cmapFormat4.rangeShift = getUInt16t();
   cmapFormat4.endCodeOffset = cmapFormat4.offset + 14;
   cmapFormat4.startCodeOffset = cmapFormat4.endCodeOffset + cmapFormat4.segCountX2 + 2;
   cmapFormat4.idDeltaOffset = cmapFormat4.startCodeOffset + cmapFormat4.segCountX2;
@@ -205,33 +178,25 @@ int truetypeClass::readCmapFormat4() {
   return 1;
 }
 
-// read cmap
+/* read cmap */
 int truetypeClass::readCmap() {
-  struct readStruct{
-    uint16_t platformId;
-    uint16_t platformSpecificId;
-    uint32_t tableOffset;
-  } readStruct;
-
-  uint32_t cmapOffset;
+  uint16_t platformId, platformSpecificId;
+  uint32_t cmapOffset, tableOffset;
   int foundMap = 0;
 
   if ((cmapOffset = seekToTable("cmap")) == 0) {
     return 0;
   }
 
-  file.read(&cmapIndex, 4);
-  cmapIndex.version = swap_uint16(cmapIndex.version);
-  cmapIndex.numberSubtables = swap_uint16(cmapIndex.numberSubtables);
+  cmapIndex.version = getUInt16t();
+  cmapIndex.numberSubtables = getUInt16t();
 
   for (int i = 0; i < cmapIndex.numberSubtables; i++) {
-    file.read(&readStruct, 8);
-    readStruct.platformId = swap_uint16(readStruct.platformId);
-    readStruct.platformSpecificId = swap_uint16(readStruct.platformSpecificId);
-    readStruct.tableOffset = swap_uint32(readStruct.tableOffset);
-
-    if ((readStruct.platformId == 3) && (readStruct.platformSpecificId == 1)) {
-      cmapFormat4.offset = cmapOffset + readStruct.tableOffset;
+    platformId = getUInt16t();
+    platformSpecificId = getUInt16t();
+    tableOffset = getUInt32t();
+    if ((platformId == 3) && (platformSpecificId == 1)) {
+      cmapFormat4.offset = cmapOffset + tableOffset;
       readCmapFormat4();
       foundMap = 1;
       break;
@@ -245,7 +210,7 @@ int truetypeClass::readCmap() {
   return 1;
 }
 
-// convert character code to glyph id
+/* convert character code to glyph id */
 uint16_t truetypeClass::codeToGlyphId(uint16_t code) {
   uint16_t start, end, idRangeOffset;
   int16_t idDelta;
@@ -273,8 +238,6 @@ uint16_t truetypeClass::codeToGlyphId(uint16_t code) {
 
         found = 1;
         break;
-      } else {
-        break; //Character code not included in collection.
       }
     }
   }
@@ -284,18 +247,8 @@ uint16_t truetypeClass::codeToGlyphId(uint16_t code) {
   return glyphId;
 }
 
-// initialize
-int truetypeClass::begin(int cs, const char * path, int checkCheckSum) {
-  if (!sd->begin(cs)) {
-    Serial.println("SD card open fail.");
-    return 0;
-  }
-
-  if ((file = sd->open(path)) == 0) {
-    Serial.println("file(in SD) open fail.");
-    return 0;
-  }
-
+/* initialize */
+int truetypeClass::begin(int checkCheckSum) {
   if (readTableDirectory(checkCheckSum) == 0) {
     file.close();
     return 0;
@@ -315,7 +268,7 @@ void truetypeClass::end() {
   file.close();
 }
 
-// read coords
+/* read coords */
 void truetypeClass::readCoords(char xy) {
   int value = 0;
   int shortFlag, sameFlag;
@@ -347,7 +300,7 @@ void truetypeClass::readCoords(char xy) {
   }
 }
 
-// insert a point at the specified position
+/* insert a point at the specified position */
 void truetypeClass::insertGlyph(int contour, int position, int16_t x, int16_t y, uint8_t flag) {
   glyph.numberOfPoints++;
   glyph.points = (ttPoint_t *)realloc(glyph.points, sizeof(ttPoint_t) * glyph.numberOfPoints);
@@ -380,9 +333,8 @@ int truetypeClass::readSimpleGlyph() {
 
   glyph.endPtsOfContours = (uint16_t *)malloc((sizeof(uint16_t) * glyph.numberOfContours));
 
-  file.read(glyph.endPtsOfContours, 2 * glyph.numberOfContours);
   for (int i = 0; i < glyph.numberOfContours; i++) {
-    glyph.endPtsOfContours[i] = swap_uint16(glyph.endPtsOfContours[i]);
+    glyph.endPtsOfContours[i] = getUInt16t();
   }
 
   #if defined ESP32
@@ -426,13 +378,11 @@ int truetypeClass::readSimpleGlyph() {
 int truetypeClass::readGlyph(uint16_t _code) {
   uint32_t offset = getGlyphOffset(codeToGlyphId(_code));
   file.seek(offset);
-  file.read(&glyph, 10);
-
-  glyph.numberOfContours = swap_int16(glyph.numberOfContours);
-  glyph.xMin = swap_int16(glyph.xMin);
-  glyph.yMin = swap_int16(glyph.yMin);
-  glyph.xMax = swap_int16(glyph.xMax);
-  glyph.yMax = swap_int16(glyph.yMax);
+  glyph.numberOfContours = getInt16t();
+  glyph.xMin = getInt16t();
+  glyph.yMin = getInt16t();
+  glyph.xMax = getInt16t();
+  glyph.yMax = getInt16t();
 
   if (glyph.numberOfContours != -1) {
     readSimpleGlyph();
@@ -463,13 +413,13 @@ uint8_t truetypeClass::generateBitmap(uint16_t _height) {
     uint8_t lastPoint;
     uint8_t firstPoint;
 
+    firstPoint = j;
+    lastPoint = glyph.endPtsOfContours[i];
+
     if ((glyph.points[lastPoint - 1].flag & FLAG_ONCURVE) && !(glyph.points[j].flag & FLAG_ONCURVE) && (glyph.points[j + 1].flag & FLAG_ONCURVE)) {
       //Bezier curve at the special case
       j++;
     }
-
-    firstPoint = j;
-    lastPoint = glyph.endPtsOfContours[i];
 
     while (j < lastPoint) {
       int16_t x0, y0, x1, y1;
@@ -542,6 +492,7 @@ uint8_t truetypeClass::generateBitmap(uint16_t _height) {
 
   return width;
 }
+
 
 void truetypeClass::freeBitmap() {
   free(this->bitmap);
@@ -681,4 +632,68 @@ int truetypeClass::getPixel(int _x, int _y, uint8_t _width) {
     pixel = 2;
   }*/
   return pixel;
+}
+
+//write user bitmap
+void truetypeClass::setStringSettings(uint16_t _characterSize, uint16_t _characterSpace, uint16_t _displayWidth, uint8_t *_bitmap){
+  this->characterSize = _characterSize;
+  this->characterSpace = _characterSpace;
+  this->displayWidth = _displayWidth;
+  this->displayWidth8 = (this->displayWidth % 8 == 0) ? (this->displayWidth / 8 ) : (this->displayWidth / 8 + 1);
+  this->userBitmap = _bitmap;
+}
+
+void truetypeClass::stringBitmap(int _x, int _y, const wchar_t _character[]){
+  uint8_t c = 0;
+
+  while (_character[c]) {
+    bool prevOnline = false;
+    bool insideNow = false;
+
+    this->readGlyph(_character[c]);
+    this->adjustGlyph();
+
+    uint16_t width = this->generateBitmap(this->characterSize);
+
+    //write array
+    for (uint16_t pixel_y = 0; pixel_y < this->characterSize; pixel_y++) {
+      for (uint16_t pixel_x = 0; pixel_x < width; pixel_x++) {
+        if (this->getPixel(pixel_x, pixel_y, width) == 1) {
+          addPixelBitmap(_x + pixel_x, _y + pixel_y, HIGH);
+          prevOnline = true;
+          insideNow = false;
+        } else if (insideNow){
+          addPixelBitmap(_x + pixel_x, _y + pixel_y, HIGH);
+          prevOnline = false;
+        } else if (prevOnline) {
+          if(this->isInside(pixel_x, pixel_y)){
+            addPixelBitmap(_x + pixel_x, _y + pixel_y, HIGH);
+            insideNow = true;
+          }
+          prevOnline = false;
+        }else{
+          addPixelBitmap(_x + pixel_x, _y + pixel_y, LOW);
+        }
+      }
+    }
+    this->freeBitmap();
+    this->freeGlyph();
+
+    _x += width + this->characterSpace; //space between charctor
+
+    c++;
+  }
+}
+
+void truetypeClass::addPixelBitmap(uint16_t _x, uint16_t _y, bool _bitVal){
+  uint16_t array = (_x / 8) + _y * this->displayWidth8;
+  uint8_t bit = 0b10000000 >> (_x % 8);
+  //Serial.printf("x:%d, y:%d\n", _x, _y);
+  //Serial.printf("ar:%d, bit:%d\n", array, bit);
+
+  if(_bitVal){
+    this->userBitmap[array] = this->userBitmap[array] | bit;
+  }else{
+    this->userBitmap[array] = this->userBitmap[array] & ~bit;
+  }
 }
