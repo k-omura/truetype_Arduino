@@ -9,6 +9,8 @@
 #include <FS.h>
 #include <SPI.h>
 #include <SD.h>
+#include <FS.h>
+#include <SPIFFS.h>
 
 #include "ILI9341_spi_ttf.h"
 
@@ -53,7 +55,7 @@
 
 //SPI pin settings
 SPIClass TFTspi = SPIClass(HSPI); //Both HSPI and VSPI are available
-ILI9341_spi_ttf ttfout = ILI9341_spi_ttf(&TFTspi);
+ILI9341_spi_ttf ttfout = ILI9341_spi_ttf(&TFTspi, tftWidth, tftHeifht);
 enum {
   TFT_CS = 27,
   TFT_RESET = 26,
@@ -62,23 +64,6 @@ enum {
 };
 //SPI pin settings end
 
-truetypeClass hiragino = truetypeClass(&SD);
-//truetypeClass genshin = truetypeClass(&SD);
-truetypeClass helvetica = truetypeClass(&SD);
-truetypeClass Avenir = truetypeClass(&SD);
-truetypeClass TNR = truetypeClass(&SD);
-truetypeClass Myriad = truetypeClass(&SD);
-//truetypeClass comic = truetypeClass(&SD);
-//const char *fontFile = "/fonts/ipag.ttf";
-//const char *fontFile = "/fonts/ipam.ttf";
-const char *fontHiragino = "/fonts/hiraginog.ttf";
-//const char *fontGenshin = "/fonts/gennokaku/GenShinGothic-Medium.ttf";
-const char *fontHelvetica = "/fonts/helvetica.ttf";
-const char *fontAvenir = "/fonts/Avenir.ttf";
-const char *fontTNR = "/fonts/TimesNewRoman.ttf";
-const char *fontMyriad = "/fonts/myriad.ttf";
-//const char *fontComic = "/fonts/ComicSans.ttf";
-//CheekFont-Regular
 //TFT ttf font end
 
 void setup() {
@@ -122,15 +107,43 @@ void setup() {
   Serial.println("fill black");
   digitalWrite(TFT_CS, HIGH);
 
-  //font begin
-  hiragino.begin(SD_CS, fontHiragino);
-  //genshin.begin(SD_CS, fontGenshin); //error
-  helvetica.begin(SD_CS, fontHelvetica);
-  Avenir.begin(SD_CS, fontAvenir);
-  TNR.begin(SD_CS, fontTNR);
-  Myriad.begin(SD_CS, fontMyriad);
-  //comic.begin(SD_CS, fontComic); //error
-  Serial.println("read fonts");
+  //read font file from SPIFFS(ESP32)
+  SPIFFS.begin();
+  delay(10);
+  File fontFile = SPIFFS.open("/hiraginog_lite.ttf", "r");
+
+
+  //read font file from SD
+  SD.begin(SD_CS);
+
+  //File fontFile = SD.open("/fonts/ipag.ttf");
+  //File fontFile = SD.open("/fonts/ipam.ttf");
+  File file_hiragino = SD.open("/fonts/hiraginog.ttf");
+  //File file_genshin = SD.open("/fonts/hiraginog.ttf");
+  File file_helvetica = SD.open("/fonts/helvetica.ttf");
+  File file_avenir = SD.open("/fonts/Avenir.ttf");
+  File file_tnr = SD.open("/fonts/TimesNewRoman.ttf");
+  File file_myriad = SD.open("/fonts/myriad.ttf");
+  File file_comicsans = SD.open("/fonts/ComicSans.ttf");
+  //read font file end
+
+  //font start
+  truetypeClass hiragino = truetypeClass(file_hiragino);
+  //truetypeClass genshin = truetypeClass(file_genshin);
+  truetypeClass helvetica = truetypeClass(file_helvetica);
+  truetypeClass Avenir = truetypeClass(file_avenir);
+  truetypeClass TNR = truetypeClass(file_tnr);
+  truetypeClass Myriad = truetypeClass(file_myriad);
+  //truetypeClass comic = truetypeClass(file_comicsans);
+
+  hiragino.begin();
+  //genshin.begin(); //error
+  helvetica.begin();
+  Avenir.begin();
+  TNR.begin();
+  Myriad.begin();
+  //comic.begin(); //error
+  Serial.println();
 
   //font output to ILI9341 initialize
   ttfout.setTruetype(&hiragino); //set font. use with "truetype.h"
@@ -146,11 +159,11 @@ void setup() {
   Serial.println("Hello message");
 
   delay(2000);
-  
+
   //fill black
   TFT_fillRect(0, tftWidth, 0, tftHeifht, TFT_background);
   Serial.println("fill black");
-  
+
   //font output to ILI9341
   ttfout.displayString(0, 0, "12369ab", 50, 5); //output string (start_x, start_y, string(char), height of charctor, inter-character space)
   ttfout.setTruetype(&helvetica);
@@ -161,7 +174,7 @@ void setup() {
   ttfout.displayString(0, 150, "12369ab", 50, 5);
   ttfout.setTruetype(&Myriad);
   ttfout.displayString(0, 200, "12569ab", 50, 5);
-  
+
   /*
   ttfout.setTruetype(&comic); //read error
   ttfout.displayString(0, 250, "12569ab", 50, 5);
