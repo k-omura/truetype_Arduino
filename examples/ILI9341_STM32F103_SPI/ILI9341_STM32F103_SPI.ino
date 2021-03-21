@@ -69,23 +69,14 @@ enum {
 };
 //SPI pin settings end
 
-truetypeClass ipag = truetypeClass(&SD);
-//truetypeClass hiragino = truetypeClass(&SD);
-//truetypeClass helvetica = truetypeClass(&SD);
-truetypeClass Avenir = truetypeClass(&SD);
-//truetypeClass TNR = truetypeClass(&SD);
-truetypeClass Myriad = truetypeClass(&SD);
-//truetypeClass comic = truetypeClass(&SD);
-//truetypeClass Garamond = truetypeClass(&SD);
-const char *fontIpag = "/fonts/ipag.ttf";
-const char *fontIpam = "/fonts/ipam.ttf";
-const char *fontHiragino = "/fonts/hiraginog.ttf";
-const char *fontHelvetica = "/fonts/helvetica.ttf";
-const char *fontAvenir = "/fonts/Avenir.ttf";
-const char *fontTNR = "/fonts/TimesNewRoman.ttf";
-const char *fontMyriad = "/fonts/myriad.ttf";
-const char *fontComic = "/fonts/ComicSans.ttf";
-const char *fontGaramond = "/fonts/AppleGaramond.ttf";
+truetypeClass ipag = truetypeClass();
+//truetypeClass hiragino = truetypeClass();
+//truetypeClass helvetica = truetypeClass();
+truetypeClass Avenir = truetypeClass();
+//truetypeClass TNR = truetypeClass();
+truetypeClass Myriad = truetypeClass();
+//truetypeClass comic = truetypeClass();
+//truetypeClass Garamond = truetypeClass();
 //TFT ttf font end
 
 void setup() {
@@ -129,14 +120,28 @@ void setup() {
   digitalWrite(TFT_CS, HIGH);
 
   //font begin
-  ipag.begin(SD_CS, fontIpag);
-  //hiragino.begin(SD_CS, fontHiragino);
-  //helvetica.begin(SD_CS, fontHelvetica);
-  Avenir.begin(SD_CS, fontAvenir);
-  //TNR.begin(SD_CS, fontTNR);
-  Myriad.begin(SD_CS, fontMyriad);
-  //comic.begin(SD_CS, fontComic);
-  //Garamond.begin(SD_CS, fontGaramond);
+  //read font file from SD
+  SD.begin(SD_CS);
+
+  //File fontFile = SD.open("/fonts/ipag.ttf");
+  //File fontFile = SD.open("/fonts/ipam.ttf");
+  //File file_hiragino = SD.open("/fonts/hiraginog.ttf");
+  //File file_genshin = SD.open("/fonts/hiraginog.ttf");
+  File file_helvetica = SD.open("/fonts/helvetica.ttf");
+  File file_avenir = SD.open("/fonts/Avenir.ttf");
+  File file_tnr = SD.open("/fonts/TimesNewRoman.ttf");
+  File file_myriad = SD.open("/fonts/myriad.ttf");
+  File file_comicsans = SD.open("/fonts/ComicSans.ttf");
+  //read font file end
+
+  ipag.begin(fontIpag);
+  //hiragino.begin(fontHiragino);
+  //helvetica.begin(fontHelvetica);
+  Avenir.begin(fontAvenir);
+  //TNR.begin(fontTNR);
+  Myriad.begin(fontMyriad);
+  //comic.begin(fontComic);
+  //Garamond.begin(fontGaramond);
   Serial.println("read fonts");
 
   //font output to ILI9341 initialize
