@@ -9,8 +9,7 @@
 
 /* constructor */
 
-truetypeClass::truetypeClass(File _file) {
-  this->file = _file;
+truetypeClass::truetypeClass() {
 }
 
 /* get uint8_t at the current position */
@@ -248,7 +247,9 @@ uint16_t truetypeClass::codeToGlyphId(uint16_t code) {
 }
 
 /* initialize */
-int truetypeClass::begin(int checkCheckSum) {
+int truetypeClass::begin(File _file, int checkCheckSum) {
+  this->file = _file;
+
   if (readTableDirectory(checkCheckSum) == 0) {
     file.close();
     return 0;
@@ -635,11 +636,12 @@ int truetypeClass::getPixel(int _x, int _y, uint8_t _width) {
 }
 
 //write user bitmap
-void truetypeClass::setStringSettings(uint16_t _characterSize, uint16_t _characterSpace, uint16_t _displayWidth, uint8_t *_bitmap){
+void truetypeClass::setStringSettings(uint16_t _characterSize, uint16_t _characterSpace, uint16_t _displayWidth, uint16_t _start_x, uint8_t *_bitmap){
   this->characterSize = _characterSize;
   this->characterSpace = _characterSpace;
   this->displayWidth = _displayWidth;
   this->displayWidth8 = (this->displayWidth % 8 == 0) ? (this->displayWidth / 8 ) : (this->displayWidth / 8 + 1);
+  this->start_x = _start_x;
   this->userBitmap = _bitmap;
 }
 
@@ -654,6 +656,12 @@ void truetypeClass::stringBitmap(int _x, int _y, const wchar_t _character[]){
     this->adjustGlyph();
 
     uint16_t width = this->generateBitmap(this->characterSize);
+
+    //Line breaks when reaching the edge of the display
+    if((width + _x) > this->displayWidth){
+      _x = this->start_x;
+      _y += this->characterSize;
+    }
 
     //write array
     for (uint16_t pixel_y = 0; pixel_y < this->characterSize; pixel_y++) {
