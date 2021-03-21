@@ -64,6 +64,13 @@ enum {
 };
 //SPI pin settings end
 
+truetypeClass hiragino = truetypeClass();
+//truetypeClass genshin = truetypeClass();
+truetypeClass helvetica = truetypeClass();
+truetypeClass Avenir = truetypeClass();
+truetypeClass TNR = truetypeClass();
+truetypeClass Myriad = truetypeClass();
+//truetypeClass comic = truetypeClass();
 //TFT ttf font end
 
 void setup() {
@@ -111,14 +118,14 @@ void setup() {
   SPIFFS.begin();
   delay(10);
   File fontFile = SPIFFS.open("/hiraginog_lite.ttf", "r");
-
+  hiragino.begin(fontFile);
 
   //read font file from SD
   SD.begin(SD_CS);
 
   //File fontFile = SD.open("/fonts/ipag.ttf");
   //File fontFile = SD.open("/fonts/ipam.ttf");
-  File file_hiragino = SD.open("/fonts/hiraginog.ttf");
+  //File file_hiragino = SD.open("/fonts/hiraginog.ttf");
   //File file_genshin = SD.open("/fonts/hiraginog.ttf");
   File file_helvetica = SD.open("/fonts/helvetica.ttf");
   File file_avenir = SD.open("/fonts/Avenir.ttf");
@@ -128,21 +135,13 @@ void setup() {
   //read font file end
 
   //font start
-  truetypeClass hiragino = truetypeClass(file_hiragino);
-  //truetypeClass genshin = truetypeClass(file_genshin);
-  truetypeClass helvetica = truetypeClass(file_helvetica);
-  truetypeClass Avenir = truetypeClass(file_avenir);
-  truetypeClass TNR = truetypeClass(file_tnr);
-  truetypeClass Myriad = truetypeClass(file_myriad);
-  //truetypeClass comic = truetypeClass(file_comicsans);
-
-  hiragino.begin();
-  //genshin.begin(); //error
-  helvetica.begin();
-  Avenir.begin();
-  TNR.begin();
-  Myriad.begin();
-  //comic.begin(); //error
+  //hiragino.begin(file_hiragino);
+  //genshin.begin(file_genshin); //error
+  helvetica.begin(file_helvetica);
+  Avenir.begin(file_avenir);
+  TNR.begin(file_tnr);
+  Myriad.begin(file_myriad);
+  //comic.begin(file_comicsans); //error
   Serial.println();
 
   //font output to ILI9341 initialize
