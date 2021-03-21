@@ -100,11 +100,11 @@ typedef struct {
 
 class truetypeClass {
   public:
-    truetypeClass(File file);
+    truetypeClass();
 
     int xMin, xMax, yMin, yMax;
 
-    int begin(int checkCheckSum = 0);
+    int begin(File file, int checkCheckSum = 0);
     void end();
     int readGlyph(uint16_t code);
     void adjustGlyph();
@@ -119,7 +119,7 @@ class truetypeClass {
     bool isInside(int _x, int _y);
 
     //write user bitmap
-    void setStringSettings(uint16_t _characterSize, uint16_t _characterSpace, uint16_t _displayWidth, uint8_t *_bitmap);
+    void setStringSettings(uint16_t _characterSize, uint16_t _characterSpace, uint16_t _displayWidth, uint16_t _start_x, uint8_t *_bitmap);
     void stringBitmap(int _x, int _y, const wchar_t _character[]);
 
   private:
@@ -175,6 +175,7 @@ class truetypeClass {
     //write user bitmap
     uint16_t characterSize = 20;
     uint16_t characterSpace = 5;
+    uint16_t start_x = 20;
     uint16_t displayWidth = 480;
     uint16_t displayWidth8;
     uint8_t *userBitmap;
