@@ -19,6 +19,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 ## display  
 - Displays without depending on libraries such as Adafruit.  
 - Outline color and the fill color can be set individually.  
+- Supports writing to arrays. Fonts can be drawn in monochrome for the uint8_t array.  
 
 # Future work (Issues)  
 ## truetype  
