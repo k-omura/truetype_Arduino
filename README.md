@@ -50,6 +50,7 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
 - Mono
   - SSD1306 (SPI) [Demo](https://youtu.be/WLiS6KDrS6Q "SSD1306")  
   - Waveshare e-Paper 2.9inch (SPI) [Demo](https://youtu.be/qs_nOYCx91o "e-Paper")  
+  - Waveshare e-Paper 7.5inch(B) (Via bitmap array) [Demo](https://youtu.be/n9_DJ3ugalQ "e-Paper")  
 
 See also the ILI9341 ESP32's exclusive code for any display.  
 The font file is read in the same way as ILI9341, but the example code on other displays has not been updated yet.  
