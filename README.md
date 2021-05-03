@@ -9,43 +9,53 @@ https://developer.apple.com/fonts/TrueType-Reference-Manual/
   - Set the ttf file read from SD, SPIFFS, FATFS, etc. 
   - File _file : ttf file.  
   - Return : 1 = read successful, 2 = read failure.  
+
 - void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebuffer_bit, uint8_t *_framebuffer);  
   - Framebuffer settings.
   - uint16_t _framebufferWidth : Framebuffer width.  
   - uint16_t _framebuffer_bit : The number of bits per pixel. (1,4,8bit implemented)
   - uint8_t *_framebuffer : Framebuffer pointer.  
+  - If you want it to correspond to your own framebuffer, edit the addPixel function. If you add code, please share it!
+
 - void setStringSpace(int16_t _characterSpace, uint8_t _kerning = 1);  
   - Setting the width between characters.  
   - int16_t _characterSpace : Width value between characters.
   - uint8_t _kerning : Read and use ttf 'kern' table. 1:'kern' + _characterSpace. 0: _characterSpace.
+
 - void setStringSize(uint16_t _characterSize);  
   - Font size setting.  
   - uint16_t _characterSize : Character height.  
+
 - void setStringLine(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
   - Setting the string range.  
   - uint16_t _start_x : The starting point x of the character string when a line break occurs.  
   - uint16_t _end_x : The final point x when breaking a line.  
   - uint16_t _end_y : The final point y when breaking a line.  
+
 - void setStringColor(uint8_t _onLine, uint8_t _inside);  
   - Text color setting.  
   - uint8_t _onLine : Character outline color.  
   - uint8_t _inside : Text fill color.  
+
 - void string(uint16_t _x, uint16_t _y, const wchar_t _character[]);  
   - Write a string to the framebuffer.  
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
   - const wchar_t _character[] : String pointer (double-byte character).  
+
 - void string(uint16_t _x, uint16_t _y, const char _character[]);  
   - Write a string to the framebuffer.  
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
   - const char _character[] : String pointer (single-byte character).  
   - Under construction  
+
 - void string(uint16_t _x, uint16_t _y, const String _string);  
   - Write a string to the framebuffer.  
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
   - const String _string : String pointer (String type).  
+
 - void end();  
   - Close font file.  
 
