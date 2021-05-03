@@ -1,5 +1,5 @@
 # Display truetype font for Arduino  
-Read truetype(.ttf) from FS(ex. SD/SPIFFS) and generate bitmap. And draw the generated bitmap on the display.  
+Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.  
 
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
@@ -8,7 +8,7 @@ https://developer.apple.com/fonts/TrueType-Reference-Manual/
 - uint8_t setTtfFile(File _file, uint8_t _checkCheckSum = 0);  
   - Set the ttf file read from SD, SPIFFS, FATFS, etc. 
   - File _file : ttf file.  
-  - Return : 1 = read successful, 2 = read failure.  
+  - Return : 1 = read successful, 0 = read failure.  
 
 - void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebuffer_bit, uint8_t *_framebuffer);  
   - Framebuffer settings.
@@ -62,15 +62,17 @@ https://developer.apple.com/fonts/TrueType-Reference-Manual/
 # Originality  
 - Fixed problem that some font files could not be read.  
 - Handling Bezier curves.  
+  - It supports up to 3rd order Bezier curves, but 4th order and above are drawn as straight lines.  
 - Outline color and the fill color can be set individually.  
 - Supports writing to arrays. Fonts are drawn in some form of framebuffer(uint8_t array).  
 - Kerning by reading the 'kern' table.  
 
 # Future work (Issues)  
 - Diversification of supported framebuffer formats.  
+- Only support for 'cmap' format 4 and  'kern' format0 is supported.  
 - Correction that some files can not be read.  
 - Unable to read ttf file if file name is long(STM32F103).  
-- Faster glyph reading and bitmap generation.  
+- Faster glyph reading and write framebuffer.  
 - Decrease usage of SRAM.  
 - Handling of Bezier curve(When exceeding 3 dimensions. Currently, provisional processing).  
 - Make underline available.  
