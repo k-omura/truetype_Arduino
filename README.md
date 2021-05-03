@@ -4,45 +4,73 @@ Read truetype(.ttf) from FS(ex. SD/SPIFFS) and generate bitmap. And draw the gen
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
 
+# API  
+- uint8_t setTtfFile(File _file, uint8_t _checkCheckSum = 0);  
+  - Set the ttf file read from SD, SPIFFS, FATFS, etc. 
+  - File _file : ttf file.  
+  - Return : 1 = read successful, 2 = read failure.  
+- void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebuffer_bit, uint8_t *_framebuffer);  
+  - Framebuffer settings.
+  - uint16_t _framebufferWidth : Framebuffer width.  
+  - uint16_t _framebuffer_bit : The number of bits per pixel. (1,4,8bit implemented)
+  - uint8_t *_framebuffer : Framebuffer pointer.  
+- void setStringSpace(int16_t _characterSpace, uint8_t _kerning = 1);  
+  - Setting the width between characters.  
+  - int16_t _characterSpace : Width value between characters.
+  - uint8_t _kerning : Read and use ttf 'kern' table. 1:'kern' + _characterSpace. 0: _characterSpace.
+- void setStringSize(uint16_t _characterSize);  
+  - Font size setting.  
+  - uint16_t _characterSize : Character height.  
+- void setStringLine(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+  - Setting the string range.  
+  - uint16_t _start_x : The starting point x of the character string when a line break occurs.  
+  - uint16_t _end_x : The final point x when breaking a line.  
+  - uint16_t _end_y : The final point y when breaking a line.  
+- void setStringColor(uint8_t _onLine, uint8_t _inside);  
+  - Text color setting.  
+  - uint8_t _onLine : Character outline color.  
+  - uint8_t _inside : Text fill color.  
+- void string(uint16_t _x, uint16_t _y, const wchar_t _character[]);  
+  - Write a string to the framebuffer.  
+  - uint16_t _x : String start point x.  
+  - uint16_t _y : String start point y.  
+  - const wchar_t _character[] : String pointer (double-byte character).  
+- void string(uint16_t _x, uint16_t _y, const char _character[]);  
+  - Write a string to the framebuffer.  
+  - uint16_t _x : String start point x.  
+  - uint16_t _y : String start point y.  
+  - const char _character[] : String pointer (single-byte character).  
+  - Under construction  
+- void string(uint16_t _x, uint16_t _y, const String _string);  
+  - Write a string to the framebuffer.  
+  - uint16_t _x : String start point x.  
+  - uint16_t _y : String start point y.  
+  - const String _string : String pointer (String type).  
+- void end();  
+  - Close font file.  
 
 # Originality  
-## truetype  
-- Separate programs in terms of the "generating a font bitmap" and the "displaying on the screen".  
 - Fixed problem that some font files could not be read.  
 - Handling Bezier curves.  
-- Faster filling process.  
-
-I divided the reading of the font file and the display on the screen. Which allows expansion to various displays.  
-In the original, an error occurred except for the font file verified by the author, so we made a correction.  
-Also, in the original, it corresponds to the second-order Bezier curve, and an error occurs depending on the font file. Therefore, this code incorporates a provisional solution to higher-order Bezier curve.  
-
-## display  
-- Displays without depending on libraries such as Adafruit.  
 - Outline color and the fill color can be set individually.  
-- Supports writing to arrays. Fonts can be drawn in monochrome for the uint8_t array.  
+- Supports writing to arrays. Fonts are drawn in some form of framebuffer(uint8_t array).  
+- Kerning by reading the 'kern' table.  
 
 # Future work (Issues)  
-## truetype  
+- Diversification of supported framebuffer formats.  
 - Correction that some files can not be read.  
 - Unable to read ttf file if file name is long(STM32F103).  
 - Faster glyph reading and bitmap generation.  
 - Decrease usage of SRAM.  
 - Handling of Bezier curve(When exceeding 3 dimensions. Currently, provisional processing).  
-
-## display  
-- Support for more various displays.  
-- Faster display of fonts (SPI optimization is required).  
 - Make underline available.  
 - Align text to the right.  
-- Mono display: Text indication is not independent.  
-  - Because it writes directly to the display, it will erase the display nearby due to its structure. It can be solved by passing through a buffer.  
-- Mono display: Support Landscape only  
 
 # Confirmed controller  
 - ESP32([Board](https://github.com/espressif/arduino-esp32))  
 - STM32F103C8T6 (SPI optimized) ([Board](https://github.com/stm32duino/Arduino_Core_STM32))  
 
-# Supported display  
+# Demo  
 - Full color
   - ILI9341 (SPI) [Demo](https://youtu.be/_-4tfssNTYE "ILI9341")    
   - SSD1331 (SPI) [Demo](https://youtu.be/wlubShLcMqE "SSD1331")  
@@ -51,10 +79,6 @@ Also, in the original, it corresponds to the second-order Bezier curve, and an e
   - SSD1306 (SPI) [Demo](https://youtu.be/WLiS6KDrS6Q "SSD1306")  
   - Waveshare e-Paper 2.9inch (SPI) [Demo](https://youtu.be/qs_nOYCx91o "e-Paper")  
   - Waveshare e-Paper 7.5inch(B) (Via bitmap array) [Demo](https://youtu.be/n9_DJ3ugalQ "e-Paper")  
-
-See also the ILI9341 ESP32's exclusive code for any display.  
-The font file is read in the same way as ILI9341, but the example code on other displays has not been updated yet.  
-It is common to use the SPI for loading the SD card. For that reason, the work of the I2C display is not prioritized.  
 
 # Note  
 Feel free to post any bugs or ideas for fixes and improvements!  
