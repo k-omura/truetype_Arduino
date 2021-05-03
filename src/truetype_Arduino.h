@@ -66,6 +66,7 @@ typedef struct {
   ttPoint_t *points;
 } ttGlyph_t;
 
+/* currently only support format4 cmap tables */
 typedef struct {
   uint16_t version;
   uint16_t numberSubtables;
@@ -93,37 +94,49 @@ typedef struct {
   uint32_t glyphIndexArrayOffset;
 } ttCmapFormat4_t;
 
+/* currently only support format0 kerning tables */
 typedef struct {
-  int x;
-  int y;
+  uint32_t version; //The version number of the kerning table (0x00010000 for the current version).
+  uint32_t nTables; //The number of subtables included in the kerning table.
+} ttKernHeader_t;
+
+typedef struct {
+  uint32_t length; //The length of this subtable in bytes, including this header.
+  uint16_t coverage; //Circumstances under which this table is used. See below for description.
+} ttKernSubtable_t;
+
+typedef struct {
+  uint16_t nPairs; //The number of kerning pairs in this subtable.
+  uint16_t searchRange; //The largest power of two less than or equal to the value of nPairs, multiplied by the size in bytes of an entry in the subtable.
+  uint16_t entrySelector; //This is calculated as log2 of the largest power of two less than or equal to the value of nPairs. This value indicates how many iterations of the search loop have to be made. For example, in a list of eight items, there would be three iterations of the loop.
+  uint16_t rangeShift; //The value of nPairs minus the largest power of two less than or equal to nPairs. This is multiplied by the size in bytes of an entry in the table.
+} ttKernFormat0_t;
+
+typedef struct {
+  int16_t x;
+  int16_t y;
 } ttCoordinate_t;
 
 class truetypeClass {
   public:
     truetypeClass();
 
-    int xMin, xMax, yMin, yMax;
+    uint8_t setTtfFile(File _file, uint8_t _checkCheckSum = 0);
+    void setFramebuffer(uint16_t _displayWidth, uint16_t _framebuffer_bit, uint8_t *_framebuffer);
+    void setStringSpace(int16_t _characterSpace, uint8_t _kerning = 1);
+    void setStringSize(uint16_t _characterSize);
+    void setStringLine(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+    void setStringColor(uint8_t _onLine, uint8_t _inside);
+    void string(uint16_t _x, uint16_t _y, const wchar_t _character[]);
+    void string(uint16_t _x, uint16_t _y, const char _character[]);
+    void string(uint16_t _x, uint16_t _y, const String _string);
 
-    int begin(File file, int checkCheckSum = 0);
     void end();
-    int readGlyph(uint16_t code);
-    void adjustGlyph();
-    void freeGlyph();
-
-    //generate Bitmap
-    ttGlyph_t glyph;
-    uint8_t *bitmap;
-    uint8_t generateBitmap(uint16_t height);
-    void freeBitmap();
-    int getPixel(int _x, int _y, uint8_t _width);
-    bool isInside(int _x, int _y);
-
-    //write user bitmap
-    void setStringSettings(uint16_t _characterSize, uint16_t _characterSpace, uint16_t _displayWidth, uint16_t _start_x, uint8_t *_bitmap);
-    void stringBitmap(int _x, int _y, const wchar_t _character[]);
 
   private:
     File file;
+
+    int16_t xMin, xMax, yMin, yMax;
 
     const int numTablesPos = 4;
     const int tablePos = 12;
@@ -131,9 +144,6 @@ class truetypeClass {
     uint16_t numTables;
     ttTable_t *table;
     ttHeadttTable_t headTable;
-    ttCmapIndex_t cmapIndex;
-    ttCmapEncoding_t *cmapEncoding;
-    ttCmapFormat4_t cmapFormat4;
 
     uint8_t getUInt8t();
     int16_t getInt16t();
@@ -142,19 +152,36 @@ class truetypeClass {
     int16_t swap_int16(int16_t _val);
     uint16_t swap_uint16(uint16_t _val);
     uint32_t swap_uint32(uint32_t _val);
+
+    //basic
     uint32_t calculateCheckSum(uint32_t offset, uint32_t length);
     uint32_t seekToTable(const char *name);
     int readTableDirectory(int checkCheckSum);
     void readHeadTable();
-    uint32_t getGlyphOffset(uint16_t index);
-    int readCmapFormat4();
-    int readCmap();
     void readCoords(char xy);
+
+    //Glyph
+    uint32_t getGlyphOffset(uint16_t index);
     void insertGlyph(int contour, int position, int16_t x, int16_t y, uint8_t flag);
     uint16_t codeToGlyphId(uint16_t code);
-    int readSimpleGlyph();
+    uint8_t readSimpleGlyph();
 
-    //generate Bitmap
+    //cmap. maps character codes to glyph indices
+    ttCmapIndex_t cmapIndex;
+    ttCmapEncoding_t *cmapEncoding;
+    ttCmapFormat4_t cmapFormat4;
+    uint8_t readCmapFormat4();
+    uint8_t readCmap();
+
+    //kerning.
+    ttKernHeader_t kernHeader;
+    ttKernSubtable_t kernSubtable;
+    ttKernFormat0_t kernFormat0;
+    uint32_t kernTablePos = NULL;
+    uint8_t readKern();
+    int16_t getKerning(uint16_t _left_glyph, uint16_t _right_glyph);
+
+    //generate points
     ttCoordinate_t *points;
     int numPoints;
     int *beginPoints;
@@ -162,9 +189,16 @@ class truetypeClass {
     int *endPoints;
     int numEndPoints;
 
-    void addPixel(int _x0, int _y0, int _width);
-    void addLine(int _x0, int _y0, int _x1, int _y1, int _width, int _height);
-    void addPoint(int _x, int _y);
+    //glyf
+    ttGlyph_t glyph;
+    void generateOutline(uint16_t _x, uint16_t _y, uint16_t _height, uint16_t _width);
+    void freePointsAll();
+    bool isInside(int16_t _x, int16_t _y);
+    uint8_t readGlyph(uint16_t code);
+    void freeGlyph();
+
+    void addLine(int16_t _x0, int16_t _y0, int16_t _x1, int16_t _y1);
+    void addPoint(int16_t _x, int16_t _y);
     void freePoints();
     void addBeginPoint(int _bp);
     void freeBeginPoints();
@@ -172,12 +206,21 @@ class truetypeClass {
     void freeEndPoints();
     int isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate_t &_point);
 
-    //write user bitmap
+    //write user framebuffer
     uint16_t characterSize = 20;
-    uint16_t characterSpace = 5;
+    uint8_t kerningOn = 1;
+    int16_t characterSpace = 0;
     uint16_t start_x = 20;
+    uint16_t end_x = 300;
+    uint16_t end_y = 300;
     uint16_t displayWidth = 480;
-    uint16_t displayWidth8;
-    uint8_t *userBitmap;
-    void addPixelBitmap(uint16_t _x, uint16_t _y, bool _bitVal);
+    uint16_t displayWidthFrame;
+    uint16_t framebufferBit;
+    uint8_t colorLine;
+    uint8_t colorInside;
+    uint8_t *userFrameBuffer;
+    void addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode);
+    void stringToWchar(String _string, wchar_t _charctor[]);
+    uint8_t GetU8ByteCount(char _ch);
+    bool IsU8LaterByte(char _ch);
 };
