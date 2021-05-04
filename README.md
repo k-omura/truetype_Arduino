@@ -65,16 +65,16 @@ truetype.end();
   - uint8_t *_framebuffer : Framebuffer pointer.  
   - If you want it to correspond to your own framebuffer, edit the addPixel function. If you add code, please share it!
 
-- void setStringSpace(int16_t _characterSpace, uint8_t _kerning = 1);  
+- void setCharacterSpacing(int16_t _characterSpace, uint8_t _kerning = 1);  
   - Setting the width between characters.  
   - int16_t _characterSpace : Width value between characters.
   - uint8_t _kerning : Read and use ttf 'kern' table. 1:'kern' + _characterSpace. 0: _characterSpace.
 
-- void setStringSize(uint16_t _characterSize);  
+- void setCharacterSize(uint16_t _characterSize);  
   - Font size setting.  
   - uint16_t _characterSize : Character height.  
 
-- void setStringLine(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+- void setStringWidth(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
   - Setting the string range.  
   - uint16_t _start_x : The starting point x of the character string when a line break occurs.  
   - uint16_t _end_x : The final point x when breaking a line.  
