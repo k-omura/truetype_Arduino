@@ -117,6 +117,11 @@ typedef struct {
   int16_t y;
 } ttCoordinate_t;
 
+typedef struct {
+  uint16_t advanceWidth;
+  int16_t leftSideBearing;
+} ttHMetric_t;
+
 class truetypeClass {
   public:
     truetypeClass();
@@ -173,6 +178,11 @@ class truetypeClass {
     uint8_t readCmapFormat4();
     uint8_t readCmap();
 
+    //hmtx. metric information for the horizontal layout each of the glyphs
+    uint32_t hmtxTablePos = NULL;
+    uint8_t readHMetric();
+    ttHMetric_t getHMetric(uint16_t _code);
+
     //kerning.
     ttKernHeader_t kernHeader;
     ttKernSubtable_t kernSubtable;
@@ -191,7 +201,7 @@ class truetypeClass {
 
     //glyf
     ttGlyph_t glyph;
-    void generateOutline(uint16_t _x, uint16_t _y, uint16_t _height, uint16_t _width);
+    void generateOutline(uint16_t _x, uint16_t _y, uint16_t _width);
     void freePointsAll();
     bool isInside(int16_t _x, int16_t _y);
     uint8_t readGlyph(uint16_t code);
@@ -210,14 +220,14 @@ class truetypeClass {
     uint16_t characterSize = 20;
     uint8_t kerningOn = 1;
     int16_t characterSpace = 0;
-    uint16_t start_x = 20;
+    uint16_t start_x = 10;
     uint16_t end_x = 300;
     uint16_t end_y = 300;
     uint16_t displayWidth = 480;
-    uint16_t displayWidthFrame;
-    uint16_t framebufferBit;
-    uint8_t colorLine;
-    uint8_t colorInside;
+    uint16_t displayWidthFrame = 480;
+    uint16_t framebufferBit = 8;
+    uint8_t colorLine = 0x00;
+    uint8_t colorInside = 0x00;
     uint8_t *userFrameBuffer;
     void addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode);
     void stringToWchar(String _string, wchar_t _charctor[]);
