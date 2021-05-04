@@ -37,9 +37,9 @@ if (!truetype.setTtfFile(fontFile)) {
 }
 
 //TrueType class string parameter settings
-truetype.setStringSize(100);
-truetype.setStringSpace(0);
-truetype.setStringLine(10, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+truetype.setCharacterSize(100);
+truetype.setCharacterSpacing(0);
+truetype.setStringWidth(10, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 truetype.setStringColor(0x00, 0x00);
 
 //Write a string to the framebuffer
