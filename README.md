@@ -30,6 +30,12 @@ truetypeClass truetype = truetypeClass();
 //Pay attention to the format of the framebuffer
 truetype.setFramebuffer(EPD_WIDTH, 4, framebuffer);
 
+//Initial reading of ttf files
+if (!truetype.setTtfFile(fontFile)) {
+  Serial.println("read ttf failed");
+  return;
+}
+
 //TrueType class string parameter settings
 truetype.setStringSize(100);
 truetype.setStringSpace(0);
