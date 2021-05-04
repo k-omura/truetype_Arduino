@@ -43,7 +43,7 @@ truetype.setStringWidth(10, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 truetype.setStringColor(0x00, 0x00);
 
 //Write a string to the framebuffer
-truetype.string(10, 10, L"epaperNotify");
+truetype.string(10, 10, L"The quick brown fox jumps over the lazy dog");
 
 //Export framebuffer to screen
 FLASH_TO_SCREEN();
