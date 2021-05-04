@@ -61,16 +61,16 @@ void truetypeClass::setFramebuffer(uint16_t _displayWidth, uint16_t _framebuffer
   return;
 }
 
-void truetypeClass::setStringSize(uint16_t _characterSize){
+void truetypeClass::setCharacterSize(uint16_t _characterSize){
   this->characterSize = _characterSize;
 }
 
-void truetypeClass::setStringSpace(int16_t _characterSpace, uint8_t _kerning){
+void truetypeClass::setCharacterSpacing(int16_t _characterSpace, uint8_t _kerning){
   this->characterSpace = _characterSpace;
   this->kerningOn = _kerning;
 }
 
-void truetypeClass::setStringLine(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
+void truetypeClass::setStringWidth(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
   this->start_x = _start_x;
   this->end_x = _end_x;
   this->end_y = _end_y;
