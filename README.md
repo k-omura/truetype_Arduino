@@ -18,6 +18,8 @@ uint8_t *framebuffer;
 framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), FRAMEBUFFER_SIZE);
 
 //Read TrueType file
+//Example in SPIFFS
+//I think that SD, FATFS and other codes will be almost the same
 SPIFFS.begin(true);
 File fontFile = SPIFFS.open("/FONTFILE.ttf", "r");
 
