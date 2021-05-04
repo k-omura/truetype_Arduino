@@ -30,6 +30,11 @@ uint8_t truetypeClass::setTtfFile(File _file, uint8_t _checkCheckSum){
     return 0;
   }
 
+  if (this->readHMetric() == 0) {
+    file.close();
+    return 0;
+  }
+
   this->readKern();
   this->readHeadTable();
   return 1;
@@ -252,10 +257,10 @@ uint16_t truetypeClass::codeToGlyphId(uint16_t _code) {
 /* kerning */
 /* read kerning table */
 uint8_t truetypeClass::readKern(){
-  uint32_t kernOffset, nextTable;
+  uint32_t nextTable;
   uint8_t foundMap = 0;
 
-  if ((kernOffset = this->seekToTable("kern")) == 0) {
+  if (this->seekToTable("kern") == 0) {
     //Serial.println("kern not found");
     return 0;
   }
@@ -326,7 +331,6 @@ uint8_t truetypeClass::readKern(){
     break;
   }
 
-
   return 1;
 }
 
@@ -345,6 +349,30 @@ int16_t truetypeClass::getKerning(uint16_t _left_glyph, uint16_t _right_glyph){
     file.seek(file.position() + 2);
   }
 
+  return result;
+}
+
+//hmtx. metric information for the horizontal layout each of the glyphs
+uint8_t truetypeClass::readHMetric(){
+  if (this->seekToTable("hmtx") == 0) {
+    //Serial.println("hmtx not found");
+    return 0;
+  }
+
+  this->hmtxTablePos = file.position();
+  return 1;
+}
+
+ttHMetric_t truetypeClass::getHMetric(uint16_t _code){
+  ttHMetric_t result;
+  result.advanceWidth = 0;
+
+  file.seek(this->hmtxTablePos + (_code * 4));
+  result.advanceWidth = getUInt16t();
+  result.leftSideBearing = getInt16t();
+
+  result.advanceWidth = (result.advanceWidth * this->characterSize) / (this->yMax - this->yMin);
+  result.leftSideBearing  = (result.leftSideBearing * this->characterSize) / (this->yMax - this->yMin);
   return result;
 }
 
@@ -491,7 +519,7 @@ void truetypeClass::freeGlyph() {
 }
 
 //generate Bitmap
-void truetypeClass::generateOutline(uint16_t _x, uint16_t _y, uint16_t _height, uint16_t _width) {
+void truetypeClass::generateOutline(uint16_t _x, uint16_t _y, uint16_t _width) {
   this->points = NULL;
   this->numPoints = 0;
   this->numBeginPoints = 0;
@@ -578,9 +606,9 @@ void truetypeClass::generateOutline(uint16_t _x, uint16_t _y, uint16_t _height, 
             y1 = (1 - t) * (1 - t) * (1 - t) * pointsOfCurve[0].y + 3 * (1 - t) * (1 - t) * t * pointsOfCurve[1].y + 3 * (1 - t) * t * t * pointsOfCurve[2].y + t * t * t * pointsOfCurve[3].y;
 
             this->addLine(map(x0, glyph.xMin, glyph.xMax, _x, _x + _width - 1),
-                          map(y0, this->yMin, this->yMax, _y + _height - 1, _y),
+                          map(y0, this->yMin, this->yMax, _y + this->characterSize - 1, _y),
                           map(x1, glyph.xMin, glyph.xMax, _x, _x + _width - 1),
-                          map(y1, this->yMin, this->yMax, _y + _height - 1, _y));
+                          map(y1, this->yMin, this->yMax, _y + this->characterSize - 1, _y));
             x0 = x1;
             y0 = y1;
           }
@@ -594,9 +622,9 @@ void truetypeClass::generateOutline(uint16_t _x, uint16_t _y, uint16_t _height, 
             y1 = (1 - t) * (1 - t) * pointsOfCurve[0].y + 2 * t * (1 - t) * pointsOfCurve[1].y + t * t * pointsOfCurve[2].y;
 
             this->addLine(map(x0, glyph.xMin, glyph.xMax, _x, _x + _width - 1),
-                          map(y0, this->yMin, this->yMax, _y + _height - 1, _y),
+                          map(y0, this->yMin, this->yMax, _y + this->characterSize - 1, _y),
                           map(x1, glyph.xMin, glyph.xMax, _x, _x + _width - 1),
-                          map(y1, this->yMin, this->yMax, _y + _height - 1, _y));
+                          map(y1, this->yMin, this->yMax, _y + this->characterSize - 1, _y));
             x0 = x1;
             y0 = y1;
           }
@@ -606,9 +634,9 @@ void truetypeClass::generateOutline(uint16_t _x, uint16_t _y, uint16_t _height, 
           degree = 1;
         case 1: //straight line
           this->addLine(map(pointsOfCurve[0].x, glyph.xMin, glyph.xMax, _x, _x + _width - 1),
-                        map(pointsOfCurve[0].y, this->yMin, this->yMax, _y + _height - 1, _y),
+                        map(pointsOfCurve[0].y, this->yMin, this->yMax, _y + this->characterSize - 1, _y),
                         map(pointsOfCurve[1].x, glyph.xMin, glyph.xMax, _x, _x + _width - 1),
-                        map(pointsOfCurve[1].y, this->yMin, this->yMax, _y + _height - 1, _y));
+                        map(pointsOfCurve[1].y, this->yMin, this->yMax, _y + this->characterSize - 1, _y));
           break;
       }
       j += degree;
@@ -713,6 +741,7 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
       c++;
       continue;
     }
+    //Serial.printf("%c\n", _character[c]);
 
     uint16_t code = this->codeToGlyphId(_character[c]);
     this->readGlyph(code);
@@ -724,9 +753,12 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
     }
     prev_code = code;
 
+
+    ttHMetric_t hMetric = getHMetric(code);
     uint16_t width = this->characterSize * (glyph.xMax - glyph.xMin) / (this->yMax - this->yMin);
+
     //Line breaks when reaching the edge of the display
-    if((width + _x) > this->end_x){
+    if((hMetric.leftSideBearing + width + _x) > this->end_x){
       _x = this->start_x;
       _y += this->characterSize;
       if(_y > this->end_y){
@@ -735,14 +767,13 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
     }
 
     //write framebuffer
-    //Serial.printf("%c\n", _character[c]);
-    this->generateOutline(_x, _y, this->characterSize, width);
+    this->generateOutline(hMetric.leftSideBearing + _x, _y, width);
     //Serial.println("---done");
     for (uint16_t pixel_y = 0; pixel_y < this->characterSize; pixel_y++) {
       for (uint16_t pixel_x = 0; pixel_x < width; pixel_x++) {
         //want to fill faster...
-        if (this->isInside(_x + pixel_x, _y + pixel_y)) {
-          this->addPixel(_x + pixel_x, _y + pixel_y, this->colorInside);
+        if (this->isInside(hMetric.leftSideBearing + _x + pixel_x, _y + pixel_y)) {
+          this->addPixel(hMetric.leftSideBearing + _x + pixel_x, _y + pixel_y, this->colorInside);
         }else{
           //out of char.
         }
@@ -751,7 +782,7 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
     this->freePointsAll();
     this->freeGlyph();
 
-    _x += width;
+    _x += (hMetric.advanceWidth) ? (hMetric.advanceWidth) : (width);
     c++;
   }
 }
