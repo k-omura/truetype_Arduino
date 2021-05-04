@@ -129,17 +129,16 @@ truetype.end();
 
 # Confirmed controller  
 - ESP32([Board](https://github.com/espressif/arduino-esp32))  
-- STM32F103C8T6 (SPI optimized) ([Board](https://github.com/stm32duino/Arduino_Core_STM32))  
+- STM32F103C8T6([Board](https://github.com/stm32duino/Arduino_Core_STM32))  
 
 # Demo  
 - Full color
-  - ILI9341 (SPI) [Demo](https://youtu.be/_-4tfssNTYE "ILI9341")    
-  - SSD1331 (SPI) [Demo](https://youtu.be/wlubShLcMqE "SSD1331")  
-  - (in progress)ST7735 (SPI)  
+  - ILI9341 [Demo](https://youtu.be/_-4tfssNTYE "ILI9341")    
+  - SSD1331 [Demo](https://youtu.be/wlubShLcMqE "SSD1331")  
 - Mono
-  - SSD1306 (SPI) [Demo](https://youtu.be/WLiS6KDrS6Q "SSD1306")  
-  - Waveshare e-Paper 2.9inch (SPI) [Demo](https://youtu.be/qs_nOYCx91o "e-Paper")  
-  - Waveshare e-Paper 7.5inch(B) (Via bitmap array) [Demo](https://youtu.be/n9_DJ3ugalQ "e-Paper")  
+  - SSD1306 [Demo](https://youtu.be/WLiS6KDrS6Q "SSD1306")  
+  - Waveshare e-Paper 2.9inch [Demo](https://youtu.be/qs_nOYCx91o "e-Paper")  
+  - Waveshare e-Paper 7.5inch(B) [Demo](https://youtu.be/n9_DJ3ugalQ "e-Paper")  
 
 # Note  
 Feel free to post any bugs or ideas for fixes and improvements!  
