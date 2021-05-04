@@ -28,7 +28,7 @@ truetypeClass truetype = truetypeClass();
 
 //Set framebuffer array in TrueType class
 //Pay attention to the format of the framebuffer
-truetype.setFramebuffer(EPD_WIDTH, 4, framebuffer);
+truetype.setFramebuffer(DISPLAY_WIDTH, 4, framebuffer);
 
 //Initial reading of ttf files
 if (!truetype.setTtfFile(fontFile)) {
