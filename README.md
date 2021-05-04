@@ -15,7 +15,7 @@ https://developer.apple.com/fonts/TrueType-Reference-Manual/
 ```
 //Prepare a frame buffer
 uint8_t *framebuffer; 
-framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), FRAMEBUFFER_SIZE);
+framebuffer = (uint8_t *)calloc(sizeof(uint8_t), FRAMEBUFFER_SIZE);
 
 //Read TrueType file
 //Example in SPIFFS
