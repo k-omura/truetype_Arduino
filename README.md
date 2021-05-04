@@ -1,8 +1,48 @@
 # Display truetype font for Arduino  
 Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.  
 
+- Read TrueType files ('cmap' format4).  
+- Write any string to the user's framebuffer.  
+- Set font size, position, color, and spacing.  
+- Read the 'kern' table (format0) and kerning.  
+- Beautifully arrange characters based on the 'hmtx' table.  
+<img src="https://user-images.githubusercontent.com/26690530/116971484-99f68600-acf4-11eb-99c6-d5e29791b53f.JPG" width="500">
+
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
+
+# Standard code  
+```
+//Prepare a frame buffer
+uint8_t *framebuffer; 
+framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), FRAMEBUFFER_SIZE);
+
+//Read TrueType file
+SPIFFS.begin(true);
+File fontFile = SPIFFS.open("/FONTFILE.ttf", "r");
+
+//TrueType class declaration
+truetypeClass truetype = truetypeClass();
+
+//Set framebuffer array in TrueType class
+//Pay attention to the format of the framebuffer
+truetype.setFramebuffer(EPD_WIDTH, 4, framebuffer);
+
+//TrueType class string parameter settings
+truetype.setStringSize(100);
+truetype.setStringSpace(0);
+truetype.setStringLine(230, EPD_WIDTH, EPD_HEIGHT);
+truetype.setStringColor(0x00, 0x00);
+
+//Write a string to the framebuffer
+truetype.string(10, 10, L"epaperNotify");
+
+//Export framebuffer to screen
+FLASH_TO_SCREEN();
+
+//end
+truetype.end();
+```
 
 # API  
 - uint8_t setTtfFile(File _file, uint8_t _checkCheckSum = 0);  
@@ -66,6 +106,7 @@ https://developer.apple.com/fonts/TrueType-Reference-Manual/
 - Outline color and the fill color can be set individually.  
 - Supports writing to arrays. Fonts are drawn in some form of framebuffer(uint8_t array).  
 - Kerning by reading the 'kern' table.  
+- Read 'hmtx' table and adjust layout  
 
 # Future work (Issues)  
 - Diversification of supported framebuffer formats.  
