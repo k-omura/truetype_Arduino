@@ -127,7 +127,7 @@ class truetypeClass {
     truetypeClass();
 
     uint8_t setTtfFile(File _file, uint8_t _checkCheckSum = 0);
-    void setFramebuffer(uint16_t _displayWidth, uint16_t _framebuffer_bit, uint8_t *_framebuffer);
+    void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer);
     void setCharacterSpacing(int16_t _characterSpace, uint8_t _kerning = 1);
     void setCharacterSize(uint16_t _characterSize);
     void setStringWidth(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
@@ -179,7 +179,7 @@ class truetypeClass {
     uint8_t readCmap();
 
     //hmtx. metric information for the horizontal layout each of the glyphs
-    uint32_t hmtxTablePos = NULL;
+    uint32_t hmtxTablePos = 0;
     uint8_t readHMetric();
     ttHMetric_t getHMetric(uint16_t _code);
 
@@ -187,17 +187,17 @@ class truetypeClass {
     ttKernHeader_t kernHeader;
     ttKernSubtable_t kernSubtable;
     ttKernFormat0_t kernFormat0;
-    uint32_t kernTablePos = NULL;
+    uint32_t kernTablePos = 0;
     uint8_t readKern();
     int16_t getKerning(uint16_t _left_glyph, uint16_t _right_glyph);
 
     //generate points
     ttCoordinate_t *points;
-    int numPoints;
-    int *beginPoints;
-    int numBeginPoints;
-    int *endPoints;
-    int numEndPoints;
+    uint16_t numPoints;
+    uint16_t *beginPoints;
+    uint16_t numBeginPoints;
+    uint16_t *endPoints;
+    uint16_t numEndPoints;
 
     //glyf
     ttGlyph_t glyph;
@@ -210,9 +210,9 @@ class truetypeClass {
     void addLine(int16_t _x0, int16_t _y0, int16_t _x1, int16_t _y1);
     void addPoint(int16_t _x, int16_t _y);
     void freePoints();
-    void addBeginPoint(int _bp);
+    void addBeginPoint(uint16_t _bp);
     void freeBeginPoints();
-    void addEndPoint(int _ep);
+    void addEndPoint(uint16_t _ep);
     void freeEndPoints();
     int isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate_t &_point);
 
@@ -223,9 +223,11 @@ class truetypeClass {
     uint16_t start_x = 10;
     uint16_t end_x = 300;
     uint16_t end_y = 300;
-    uint16_t displayWidth = 480;
-    uint16_t displayWidthFrame = 480;
+    uint16_t displayWidth = 400;
+    uint16_t displayHeight = 400;
+    uint16_t displayWidthFrame = 400;
     uint16_t framebufferBit = 8;
+    uint8_t framebufferDirection = 0;
     uint8_t colorLine = 0x00;
     uint8_t colorInside = 0x00;
     uint8_t *userFrameBuffer;
