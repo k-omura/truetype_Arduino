@@ -110,6 +110,18 @@ void setup() {
 - void end();  
   - Close font file.  
 
+# Framebuffer format
+Bit orientation when storing information for multiple pixels per byte of the framebuffer.  
+The types of framebuffers are broadly divided according to this direction.  
+Currently supported: Horizontal - 1,4,8bit
+## Horizontal
+Example with 1bit / 1pixel  
+<img src="https://user-images.githubusercontent.com/26690530/117164679-cf3bca80-adff-11eb-9a5b-11b3093502dd.png" width="300">
+
+## Vertical
+Example with 1bit / 1pixel  
+<img src="https://user-images.githubusercontent.com/26690530/117164690-d2cf5180-adff-11eb-8bbf-10463ef52833.png" height="300">
+
 # Originality  
 - Fixed problem that some font files could not be read.  
 - Handling Bezier curves.  
