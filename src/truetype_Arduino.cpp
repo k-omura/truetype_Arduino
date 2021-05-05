@@ -40,24 +40,30 @@ uint8_t truetypeClass::setTtfFile(File _file, uint8_t _checkCheckSum){
   return 1;
 }
 
-void truetypeClass::setFramebuffer(uint16_t _displayWidth, uint16_t _framebuffer_bit, uint8_t *_framebuffer) {
-  this->displayWidth = _displayWidth;
+void truetypeClass::setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer) {
+  this->displayWidth = _framebufferWidth;
+  this->displayHeight = _framebufferHeight;
   this->framebufferBit = _framebuffer_bit;
+  this->framebufferDirection = _framebufferDirection;
   this->userFrameBuffer = _framebuffer;
 
-  switch(this->framebufferBit){
-    case 8: //8bit Horizontal
-      this->displayWidthFrame = this->displayWidth;
-      break;
-    case 4: //4bit Horizontal
-      this->displayWidthFrame = (this->displayWidth % 2 == 0) ? (this->displayWidth / 2 ) : (this->displayWidth / 2 + 1);
-      break;
-    case 1: //1bit Horizontal
-    default:
-      this->displayWidthFrame = (this->displayWidth % 8 == 0) ? (this->displayWidth / 8 ) : (this->displayWidth / 8 + 1);
-      break;
+  if(_framebufferDirection){
+    //Framebuffer bit direction: Vertical
+  }else{
+    //Framebuffer bit direction: Horizontal
+    switch(this->framebufferBit){
+      case 8: //8bit Horizontal
+        this->displayWidthFrame = this->displayWidth;
+        break;
+      case 4: //4bit Horizontal
+        this->displayWidthFrame = (this->displayWidth % 2 == 0) ? (this->displayWidth / 2 ) : (this->displayWidth / 2 + 1);
+        break;
+      case 1: //1bit Horizontal
+      default:
+        this->displayWidthFrame = (this->displayWidth % 8 == 0) ? (this->displayWidth / 8 ) : (this->displayWidth / 8 + 1);
+        break;
+    }
   }
-
   return;
 }
 
@@ -221,7 +227,7 @@ uint8_t truetypeClass::readCmap() {
 uint16_t truetypeClass::codeToGlyphId(uint16_t _code) {
   uint16_t start, end, idRangeOffset;
   int16_t idDelta;
-  int found = 0;
+  uint8_t found = 0;
   uint16_t offset, glyphId;
 
   for (int i = 0; i < cmapFormat4.segCountX2 / 2; i++) {
@@ -533,7 +539,7 @@ void truetypeClass::generateOutline(uint16_t _x, uint16_t _y, uint16_t _width) {
   for (uint16_t i = 0; i < glyph.numberOfContours; i++) {
     uint8_t firstPointOfContour = j;
     uint8_t lastPointOfContour = glyph.endPtsOfContours[i];
-    //Serial.print("------Contous- ");
+    //Serial.print("---Contour--- ");
     //Serial.print(j);
     //Serial.print(" , ");
     //Serial.println(lastPointOfContour);
@@ -641,14 +647,17 @@ void truetypeClass::generateOutline(uint16_t _x, uint16_t _y, uint16_t _width) {
       }
       j += degree;
     }
+    //Serial.println(this->numPoints);
     this->addEndPoint(this->numPoints - 1);
     this->addBeginPoint(this->numPoints);
+    //Serial.println("---Contour---");
   }
   return;
 }
 
 /* Bresenham's line algorithm */
 void truetypeClass::addLine(int16_t _x0, int16_t _y0, int16_t _x1, int16_t _y1) {
+  //Serial.printf("addLine(%3d, %3d) -> (%3d, %3d)\n", _x0, _y0, _x1, _y1);
   uint16_t dx = abs(_x1 - _x0);
   uint16_t dy = abs(_y1 - _y0);
   int16_t sx, sy, err, e2;
@@ -731,12 +740,12 @@ int truetypeClass::isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate
 
 void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[]){
   uint8_t c = 0;
-  uint16_t prev_code = NULL;
+  uint16_t prev_code = 0;
 
   while (_character[c] != '\0') {
     //space (half-width, full-width)
     if((_character[c] == ' ') || (_character[c] == '　')){
-      prev_code = NULL;
+      prev_code = 0;
       _x += this->characterSize / 4;
       c++;
       continue;
@@ -747,12 +756,11 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
     this->readGlyph(code);
 
     _x += this->characterSpace;
-    if(prev_code != NULL && this->kerningOn){
+    if(prev_code != 0 && this->kerningOn){
       int16_t kern = this->getKerning(prev_code, code); //space between charctor
       _x += (kern * (int16_t)this->characterSize) / (this->yMax - this->yMin);
     }
     prev_code = code;
-
 
     ttHMetric_t hMetric = getHMetric(code);
     uint16_t width = this->characterSize * (glyph.xMax - glyph.xMin) / (this->yMax - this->yMin);
@@ -768,7 +776,6 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
 
     //write framebuffer
     this->generateOutline(hMetric.leftSideBearing + _x, _y, width);
-    //Serial.println("---done");
     for (uint16_t pixel_y = 0; pixel_y < this->characterSize; pixel_y++) {
       for (uint16_t pixel_x = 0; pixel_x < width; pixel_x++) {
         //want to fill faster...
@@ -782,6 +789,7 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
     this->freePointsAll();
     this->freeGlyph();
 
+    //Serial.println("---done");
     _x += (hMetric.advanceWidth) ? (hMetric.advanceWidth) : (width);
     c++;
   }
@@ -799,34 +807,41 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const String _string){
 }
 
 void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
+  //Serial.printf("addPix(%3d, %3d)\n", _x, _y);
   uint8_t *buf_ptr;
-  switch(this->framebufferBit){
-    case 8: //8bit Horizontal
-      {
-        this->userFrameBuffer[_x + _y * this->displayWidthFrame] = _colorCode;
-      }
-      break;
-    case 4: //4bit Horizontal
-      {
-        buf_ptr = &this->userFrameBuffer[(_x / 2) + _y * this->displayWidthFrame];
-        _colorCode = _colorCode & 0b00001111;
 
-        if (_x % 2) {
-          *buf_ptr = (*buf_ptr & 0b00001111) + (_colorCode << 4);
-        } else {
-          *buf_ptr = (*buf_ptr & 0b11110000) + _colorCode;
+  if(_framebufferDirection){
+    //Framebuffer bit direction: Vertical
+  }else{
+    //Framebuffer bit direction: Horizontal
+    switch(this->framebufferBit){
+      case 8: //8bit Horizontal
+        {
+          this->userFrameBuffer[_x + _y * this->displayWidthFrame] = _colorCode;
         }
-      }
-      break;
-    case 1: //1bit Horizontal
-    default:
-      {
-        buf_ptr = &this->userFrameBuffer[(_x / 8) + _y * this->displayWidthFrame];
-        uint8_t bitMask = 0b10000000 >> (_x % 8);
-        uint8_t bit = (_colorCode) ? (bitMask) : (0b00000000);
-        *buf_ptr = (*buf_ptr & ~bitMask) + bit;
-      }
-      break;
+        break;
+      case 4: //4bit Horizontal
+        {
+          buf_ptr = &this->userFrameBuffer[(_x / 2) + _y * this->displayWidthFrame];
+          _colorCode = _colorCode & 0b00001111;
+
+          if (_x % 2) {
+            *buf_ptr = (*buf_ptr & 0b00001111) + (_colorCode << 4);
+          } else {
+            *buf_ptr = (*buf_ptr & 0b11110000) + _colorCode;
+          }
+        }
+        break;
+      case 1: //1bit Horizontal
+      default:
+        {
+          buf_ptr = &this->userFrameBuffer[(_x / 8) + _y * this->displayWidthFrame];
+          uint8_t bitMask = 0b10000000 >> (_x % 8);
+          uint8_t bit = (_colorCode) ? (bitMask) : (0b00000000);
+          *buf_ptr = (*buf_ptr & ~bitMask) + bit;
+        }
+        break;
+    }
   }
   return;
 }
@@ -839,16 +854,15 @@ void truetypeClass::addPoint(int16_t _x, int16_t _y) {
   this->points[(this->numPoints - 1)].y = _y;
 }
 
-void truetypeClass::addBeginPoint(int _bp) {
+void truetypeClass::addBeginPoint(uint16_t _bp) {
   this->numBeginPoints++;
-  this->beginPoints = (int *)realloc(this->beginPoints, sizeof(int) * this->numBeginPoints);
+  this->beginPoints = (uint16_t *)realloc(this->beginPoints, sizeof(uint16_t) * this->numBeginPoints);
   this->beginPoints[(this->numBeginPoints - 1)] = _bp;
 }
 
-
-void truetypeClass::addEndPoint(int _ep) {
+void truetypeClass::addEndPoint(uint16_t _ep) {
   this->numEndPoints++;
-  this->endPoints = (int *)realloc(this->endPoints, sizeof(int) * this->numEndPoints);
+  this->endPoints = (uint16_t *)realloc(this->endPoints, sizeof(uint16_t) * this->numEndPoints);
   this->endPoints[(this->numEndPoints - 1)] = _ep;
 }
 
@@ -879,7 +893,7 @@ void truetypeClass::freeEndPoints() {
 /* file */
 /* seek to the first position of the specified table name */
 uint32_t truetypeClass::seekToTable(const char *name) {
-  for (int i = 0; i < this->numTables; i++) {
+  for (uint32_t i = 0; i < this->numTables; i++) {
     if (strcmp(table[i].name, name) == 0) {
       file.seek(table[i].offset);
       return table[i].offset;
