@@ -30,7 +30,7 @@ void setup() {
 
   //Set framebuffer array in TrueType class
   //Pay attention to the format of the framebuffer
-  truetype.setFramebuffer(DISPLAY_WIDTH, 4, framebuffer);
+  truetype.setFramebuffer(DISPLAY_WIDTH, DISPLAY_HEIGHT, 4, 0, framebuffer);
 
   //Initial reading of ttf files
   if (!truetype.setTtfFile(fontFile)) {
@@ -61,10 +61,13 @@ void setup() {
   - File _file : ttf file.  
   - Return : 1 = read successful, 0 = read failure.  
 
-- void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebuffer_bit, uint8_t *_framebuffer);  
+- void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer);  
   - Framebuffer settings.
   - uint16_t _framebufferWidth : Framebuffer width.  
+  - uint16_t _framebufferHeight : Framebuffer eight.
   - uint16_t _framebuffer_bit : The number of bits per pixel. (1,4,8bit implemented)
+  - uint8_t _framebufferDirection : Bit orientation.
+    - [See Framebuffer format](#Framebuffer-format)  
   - uint8_t *_framebuffer : Framebuffer pointer.  
   - If you want it to correspond to your own framebuffer, edit the addPixel function. If you add code, please share it!
 
