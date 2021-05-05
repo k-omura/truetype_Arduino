@@ -13,43 +13,46 @@ https://developer.apple.com/fonts/TrueType-Reference-Manual/
 
 # Standard code  
 ```
-//Prepare a frame buffer
-uint8_t *framebuffer; 
-framebuffer = (uint8_t *)calloc(sizeof(uint8_t), FRAMEBUFFER_SIZE);
-
-//Read TrueType file
-//Example in SPIFFS
-//I think that SD, FATFS and other codes will be almost the same
-SPIFFS.begin(true);
-File fontFile = SPIFFS.open("/FONTFILE.ttf", "r");
-
 //TrueType class declaration
 truetypeClass truetype = truetypeClass();
 
-//Set framebuffer array in TrueType class
-//Pay attention to the format of the framebuffer
-truetype.setFramebuffer(DISPLAY_WIDTH, 4, framebuffer);
+void setup() {
+  //Prepare a frame buffer
+  uint8_t *framebuffer; 
+  framebuffer = (uint8_t *)calloc(sizeof(uint8_t), FRAMEBUFFER_SIZE);
 
-//Initial reading of ttf files
-if (!truetype.setTtfFile(fontFile)) {
-  Serial.println("read ttf failed");
-  return;
+  //Read TrueType file
+  //Example in SPIFFS
+  //I think that SD, FATFS and other codes will be almost the same
+  SPIFFS.begin(true);
+  File fontFile = SPIFFS.open("/FONTFILE.ttf", "r");
+
+
+  //Set framebuffer array in TrueType class
+  //Pay attention to the format of the framebuffer
+  truetype.setFramebuffer(DISPLAY_WIDTH, 4, framebuffer);
+
+  //Initial reading of ttf files
+  if (!truetype.setTtfFile(fontFile)) {
+    Serial.println("read ttf failed");
+    return;
+  }
+
+  //TrueType class string parameter settings
+  truetype.setCharacterSize(100);
+  truetype.setCharacterSpacing(0);
+  truetype.setStringWidth(10, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+  truetype.setStringColor(0x00, 0x00);
+
+  //Write a string to the framebuffer
+  truetype.string(10, 10, L"The quick brown fox jumps over the lazy dog");
+
+  //Export framebuffer to screen
+  FLASH_TO_SCREEN();
+
+  //end
+  truetype.end();
 }
-
-//TrueType class string parameter settings
-truetype.setCharacterSize(100);
-truetype.setCharacterSpacing(0);
-truetype.setStringWidth(10, DISPLAY_WIDTH, DISPLAY_HEIGHT);
-truetype.setStringColor(0x00, 0x00);
-
-//Write a string to the framebuffer
-truetype.string(10, 10, L"The quick brown fox jumps over the lazy dog");
-
-//Export framebuffer to screen
-FLASH_TO_SCREEN();
-
-//end
-truetype.end();
 ```
 
 # API  
