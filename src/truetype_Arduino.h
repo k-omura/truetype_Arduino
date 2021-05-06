@@ -141,6 +141,7 @@ class truetypeClass {
     void setCharacterSize(uint16_t _characterSize);
     void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
     void setTextColor(uint8_t _onLine, uint8_t _inside);
+    void setTextColour(uint8_t _onLine, uint8_t _inside);
     void setTextCentred(bool _centred);
     void setTextDirection(uint16_t _textDirection);
     void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);

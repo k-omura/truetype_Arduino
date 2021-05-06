@@ -80,13 +80,14 @@ void setup() {
   - Font size setting.  
   - uint16_t _characterSize : Character height.  
 
-- void textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
-  - Setting the string range.  
+- void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+  - Setting the boundary within which the text will be drawn and centred.  
   - uint16_t _start_x : The starting point x of the character string when a line break occurs.  
   - uint16_t _end_x : The final point x when breaking a line.  
   - uint16_t _end_y : The final point y when breaking a line.  
 
 - void setTextColor(uint8_t _onLine, uint8_t _inside);  
+- void setTextColour(uint8_t _onLine, uint8_t _inside);  
   - Text color setting.  
   - uint8_t _onLine : Character outline color.  
   - uint8_t _inside : Text fill color.  

@@ -121,7 +121,9 @@ void truetypeClass::setTextColor(uint8_t _onLine, uint8_t _inside){
   this->colorLine = _onLine;
   this->colorInside = _inside;
 }
-
+void truetypeClass::setTextColour(uint8_t _onLine, uint8_t _inside){
+  this->setTextColor(_onLine, _inside); //an Australian being pedantic 
+}
 /* ----------------private---------------- */
 /* calculate checksum */
 uint32_t truetypeClass::calculateCheckSum(uint32_t offset, uint32_t length) {
