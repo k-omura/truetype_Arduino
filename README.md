@@ -126,6 +126,9 @@ Example with 1bit / 1pixel
 Example with 1bit / 1pixel  
 <img src="https://user-images.githubusercontent.com/26690530/117164690-d2cf5180-adff-11eb-8bbf-10463ef52833.png" height="300">
 
+## An example of the frame buffer.
+<img src="./rotations.png" height="300">
+
 # Originality  
 - Fixed problem that some font files could not be read.  
 - Handling Bezier curves.  
