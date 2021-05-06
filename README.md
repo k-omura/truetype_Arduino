@@ -136,8 +136,9 @@ Example with 1bit / 1pixel
 
 # Future work  
 ## TrueType  
+- Support for "Compound glyphs"  
 - Diversification of supported framebuffer formats.  
-- Only support for 'cmap' format 4 and  'kern' format0 is supported.  
+- Only support for 'cmap' format 4 and 'kern' format0 is supported.  
 - Correction that some files can not be read.  
 - Unable to read ttf file if file name is long(STM32F103).  
 - Faster glyph reading and write framebuffer.  
