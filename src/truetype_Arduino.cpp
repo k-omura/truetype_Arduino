@@ -47,7 +47,7 @@ void truetypeClass::setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebu
   this->framebufferDirection = _framebufferDirection;
   this->userFrameBuffer = _framebuffer;
 
-  if(_framebufferDirection){
+  if(this->framebufferDirection){
     //Framebuffer bit direction: Vertical
   }else{
     //Framebuffer bit direction: Horizontal
@@ -76,18 +76,18 @@ void truetypeClass::setCharacterSpacing(int16_t _characterSpace, uint8_t _kernin
   this->kerningOn = _kerning;
 }
 
-void truetypeClass::setStringWidth(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
+void truetypeClass::textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
   this->start_x = _start_x;
   this->end_x = _end_x;
   this->end_y = _end_y;
 }
 
-void truetypeClass::setStringColor(uint8_t _onLine, uint8_t _inside){
+void truetypeClass::setTextColor(uint8_t _onLine, uint8_t _inside){
   this->colorLine = _onLine;
   this->colorInside = _inside;
 }
 
-/* ----------------protected---------------- */
+/* ----------------private---------------- */
 /* calculate checksum */
 uint32_t truetypeClass::calculateCheckSum(uint32_t offset, uint32_t length) {
   uint32_t checksum = 0L;
@@ -738,7 +738,7 @@ int truetypeClass::isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate
   return ((_p1.x - _p0.x) * (_point.y - _p0.y) - (_point.x - _p0.x) * (_p1.y - _p0.y));
 }
 
-void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[]){
+void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]){
   uint8_t c = 0;
   uint16_t prev_code = 0;
 
@@ -795,22 +795,22 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
   }
 }
 
-void truetypeClass::string(uint16_t _x, uint16_t _y, const char _character[]){
-  this->string(_x, _y, (wchar_t*)_character);
+void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const char _character[]){
+  this->textDraw(_x, _y, (wchar_t*)_character);
 }
 
-void truetypeClass::string(uint16_t _x, uint16_t _y, const String _string){
+void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const String _string){
   uint16_t length = _string.length();
   wchar_t *character = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
   this->stringToWchar(_string, character);
-  this->string(_x, _y, character);
+  this->textDraw(_x, _y, character);
 }
 
 void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
   //Serial.printf("addPix(%3d, %3d)\n", _x, _y);
   uint8_t *buf_ptr;
 
-  if(_framebufferDirection){
+  if(this->framebufferDirection){
     //Framebuffer bit direction: Vertical
   }else{
     //Framebuffer bit direction: Horizontal
