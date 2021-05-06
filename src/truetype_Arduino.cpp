@@ -44,12 +44,12 @@ void truetypeClass::setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebu
   this->displayWidth = _framebufferWidth;
   this->displayHeight = _framebufferHeight;
   this->framebufferBit = _framebuffer_bit;
-  this->framebufferDirection = _framebufferDirection;
+  this->setTextDirection(_framebufferDirection);
   this->userFrameBuffer = _framebuffer;
 
-  if(this->framebufferDirection){
-    //Framebuffer bit direction: Vertical
-  }else{
+  //~ if(this->framebufferDirection){ // not necessary here
+    //~ //Framebuffer bit direction: Vertical
+  //~ }else{
     //Framebuffer bit direction: Horizontal
     switch(this->framebufferBit){
       case 8: //8bit Horizontal
@@ -63,8 +63,43 @@ void truetypeClass::setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebu
         this->displayWidthFrame = (this->displayWidth % 8 == 0) ? (this->displayWidth / 8 ) : (this->displayWidth / 8 + 1);
         break;
     }
-  }
+  //~ }
   return;
+}
+
+ //~ no need to implement this yet it's just an idea
+//~ void truetypeClass::setTextOrientation(bool rightToLeft){
+  //~ this->framebufferDirection = (this->framebufferDirection & 0b01111111) | (rightToLeft ? 0x0 : 0b10000000) ;
+//~ }
+
+void truetypeClass::setTextCentred(bool _centred){
+  this->framebufferDirection = (this->framebufferDirection & 0b11111011) | (_centred ? 0b00000100: 0) ;
+}
+
+void truetypeClass::setTextDirection(uint16_t _textDirection){
+  uint8_t rotation= 0x0; //default
+  switch (_textDirection)
+  {
+    case (90):
+    case (1):
+    {
+      rotation = 0x01;
+      break;
+    }
+    case (180):
+    case (2):
+    {
+      rotation = 0x02;
+      break;
+    }
+    case (270):
+    case (3):
+    {   
+      rotation = 0x03;
+      break;
+    }
+  }
+  this->framebufferDirection = (this->framebufferDirection & 0b11111100) | rotation;
 }
 
 void truetypeClass::setCharacterSize(uint16_t _characterSize){
@@ -76,7 +111,7 @@ void truetypeClass::setCharacterSpacing(int16_t _characterSpace, uint8_t _kernin
   this->kerningOn = _kerning;
 }
 
-void truetypeClass::textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
+void truetypeClass::setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
   this->start_x = _start_x;
   this->end_x = _end_x;
   this->end_y = _end_y;
@@ -788,19 +823,36 @@ void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const String _string){
   this->textDraw(_x, _y, character);
 }
 
-void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
+void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
   //Serial.printf("addPix(%3d, %3d)\n", _x, _y);
   uint8_t *buf_ptr;
-
+  int16_t temp = _x;
+  uint8_t rotation = this->framebufferDirection & 0x3;
+  
+  if(rotation == 1) // mask off all but low two bits the 1 = 90 degree rotation
+  {
+    _x = this->displayWidth -1 - _y ;
+    _y =  temp;
+  }
+  else if(rotation == 2) // 180 degrees
+  {
+    _x = this->displayWidth -1 - _x;
+    _y = this->displayHeight -1 - _y;
+  }
+  else if(rotation == 3) // both bits are set so 270 degrees
+  {
+    _x = _y ;
+    _y = this->displayHeight -1 - temp ;
+  }
   //out of range
-  if((_x >= this->displayWidth) || (_y >= this->displayHeight)){
+  if((_x < 0) || (_x >= this->displayWidth) || (_y >= this->displayHeight) || (_y < 0)){
     return;
   }
 
-  if(this->framebufferDirection){
-    //Framebuffer bit direction: Vertical
-  }else{
-    //Framebuffer bit direction: Horizontal
+  //~ if(this->framebufferDirection){
+    //~ //Framebuffer bit direction: Vertical
+  //~ }else{
+    //Framebuffer bit direction: Horizontal all directions should just work now
     switch(this->framebufferBit){
       case 8: //8bit Horizontal
         {
@@ -829,7 +881,7 @@ void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
         }
         break;
     }
-  }
+  //~ }
   return;
 }
 

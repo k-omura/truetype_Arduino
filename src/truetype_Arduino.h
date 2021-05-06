@@ -139,8 +139,10 @@ class truetypeClass {
     void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer);
     void setCharacterSpacing(int16_t _characterSpace, uint8_t _kerning = 1);
     void setCharacterSize(uint16_t _characterSize);
-    void textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+    void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
     void setTextColor(uint8_t _onLine, uint8_t _inside);
+    void setTextCentred(bool _centred);
+    void setTextDirection(uint16_t _textDirection);
     void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);
     void textDraw(uint16_t _x, uint16_t _y, const char _character[]);
     void textDraw(uint16_t _x, uint16_t _y, const String _string);
@@ -240,7 +242,7 @@ class truetypeClass {
     uint8_t colorLine = 0x00;
     uint8_t colorInside = 0x00;
     uint8_t *userFrameBuffer;
-    void addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode);
+    void addPixel(int16_t _x, int16_t _y, uint8_t _colorCode);
     void stringToWchar(String _string, wchar_t _charctor[]);
     uint8_t GetU8ByteCount(char _ch);
     bool IsU8LaterByte(char _ch);
