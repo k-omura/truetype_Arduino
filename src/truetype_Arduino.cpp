@@ -47,7 +47,7 @@ void truetypeClass::setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebu
   this->framebufferDirection = _framebufferDirection;
   this->userFrameBuffer = _framebuffer;
 
-  if(_framebufferDirection){
+  if(this->framebufferDirection){
     //Framebuffer bit direction: Vertical
   }else{
     //Framebuffer bit direction: Horizontal
@@ -76,18 +76,18 @@ void truetypeClass::setCharacterSpacing(int16_t _characterSpace, uint8_t _kernin
   this->kerningOn = _kerning;
 }
 
-void truetypeClass::setStringWidth(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
+void truetypeClass::textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
   this->start_x = _start_x;
   this->end_x = _end_x;
   this->end_y = _end_y;
 }
 
-void truetypeClass::setStringColor(uint8_t _onLine, uint8_t _inside){
+void truetypeClass::setTextColor(uint8_t _onLine, uint8_t _inside){
   this->colorLine = _onLine;
   this->colorInside = _inside;
 }
 
-/* ----------------protected---------------- */
+/* ----------------private---------------- */
 /* calculate checksum */
 uint32_t truetypeClass::calculateCheckSum(uint32_t offset, uint32_t length) {
   uint32_t checksum = 0L;
@@ -106,19 +106,19 @@ uint32_t truetypeClass::calculateCheckSum(uint32_t offset, uint32_t length) {
 int truetypeClass::readTableDirectory(int checkCheckSum) {
   file.seek(numTablesPos);
   numTables = this->getUInt16t();
-  table = (ttTable_t *)malloc(sizeof(ttTable_t) * numTables);
+  this->table = (ttTable_t *)malloc(sizeof(ttTable_t) * numTables);
 
   file.seek(tablePos);
   //Serial.println("---table list---");
   for (int i = 0; i < numTables; i++) {
     for (int j = 0; j < 4; j++) {
-      table[i].name[j] = this->getUInt8t();
+      this->table[i].name[j] = this->getUInt8t();
       //Serial.printf("%c", table[i].name[j]);
     }
-    table[i].name[4] = '\0';
-    table[i].checkSum = this->getUInt32t();
-    table[i].offset = this->getUInt32t();
-    table[i].length = this->getUInt32t();
+    this->table[i].name[4] = '\0';
+    this->table[i].checkSum = this->getUInt32t();
+    this->table[i].offset = this->getUInt32t();
+    this->table[i].length = this->getUInt32t();
 
     //Serial.printf("--%X", table[i].offset);
     //Serial.println();
@@ -126,9 +126,9 @@ int truetypeClass::readTableDirectory(int checkCheckSum) {
 
   if (checkCheckSum) {
     for (int i = 0; i < numTables; i++) {
-      if (strcmp(table[i].name, "head") != 0) { /* checksum of "head" is invalid */
-        uint32_t c = this->calculateCheckSum(table[i].offset, table[i].length);
-        if (table[i].checkSum != c) {
+      if (strcmp(this->table[i].name, "head") != 0) { /* checksum of "head" is invalid */
+        uint32_t c = this->calculateCheckSum(this->table[i].offset, this->table[i].length);
+        if (this->table[i].checkSum != c) {
           return 0;
         }
       }
@@ -271,14 +271,7 @@ uint8_t truetypeClass::readKern(){
     return 0;
   }
 
-  //kernHeader.version = this->getUInt32t(); // skip version
   kernHeader.nTables = this->getUInt32t();
-
-  //Serial.println("---kern---");
-  //Serial.print("version:");
-  //Serial.println(kernHeader.version);
-  //Serial.print("nTables:");
-  //Serial.println(kernHeader.nTables);
 
   //only support up to 32 sub-tables
   if (kernHeader.nTables > 32){
@@ -294,17 +287,6 @@ uint8_t truetypeClass::readKern(){
     kernSubtable.coverage = this->getUInt16t();
 
     format = (uint16_t)(kernSubtable.coverage >> 8);
-
-    //Serial.print("---table:");
-    //Serial.println(i);
-    //Serial.print("length:");
-    //Serial.println(kernSubtable.length);
-    //Serial.print("coverage:");
-    //Serial.println(kernSubtable.coverage);
-    //Serial.print("format:");
-    //Serial.println(format);
-    //Serial.print("horizontal:");
-    //Serial.println(kernSubtable.coverage & 0x0003);
 
     // only support format0
     if(format != 0){
@@ -324,15 +306,6 @@ uint8_t truetypeClass::readKern(){
     kernFormat0.entrySelector = this->getUInt16t();
     kernFormat0.rangeShift = this->getUInt16t();
     this->kernTablePos = file.position();
-
-    //Serial.print("nPairs:");
-    //Serial.println(kernFormat0.nPairs);
-    //Serial.print("searchRange:");
-    //Serial.println(kernFormat0.searchRange);
-    //Serial.print("entrySelector:");
-    //Serial.println(kernFormat0.entrySelector);
-    //Serial.print("rangeShift:");
-    //Serial.println(kernFormat0.rangeShift);
 
     break;
   }
@@ -462,6 +435,10 @@ uint8_t truetypeClass::readSimpleGlyph() {
   int repeatCount;
   uint8_t flag;
 
+  if (glyph.numberOfContours == 0) {
+    return 0;
+  }
+
   glyph.endPtsOfContours = (uint16_t *)malloc((sizeof(uint16_t) * glyph.numberOfContours));
 
   for (int i = 0; i < glyph.numberOfContours; i++) {
@@ -469,9 +446,6 @@ uint8_t truetypeClass::readSimpleGlyph() {
   }
 
   file.seek(this->getUInt16t() + file.position());
-  if (glyph.numberOfContours == 0) {
-    return 0;
-  }
 
   glyph.numberOfPoints = 0;
   for (int i = 0; i < glyph.numberOfContours; i++) {
@@ -521,7 +495,9 @@ uint8_t truetypeClass::readGlyph(uint16_t _code) {
 /* free glyph */
 void truetypeClass::freeGlyph() {
   free(glyph.points);
+    //Serial.println("g-a-a-a-a-a-a-a-a-a-a-a");
   free(glyph.endPtsOfContours);
+    //Serial.println("h-a-a-a-a-a-a-a-a-a-a-a");
 }
 
 //generate Bitmap
@@ -738,7 +714,7 @@ int truetypeClass::isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate
   return ((_p1.x - _p0.x) * (_point.y - _p0.y) - (_point.x - _p0.x) * (_p1.y - _p0.y));
 }
 
-void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[]){
+void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]){
   uint8_t c = 0;
   uint16_t prev_code = 0;
 
@@ -753,7 +729,9 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
     //Serial.printf("%c\n", _character[c]);
 
     uint16_t code = this->codeToGlyphId(_character[c]);
+    //Serial.printf("code:%4d\n", code);
     this->readGlyph(code);
+    //Serial.println(glyph.numberOfContours);
 
     _x += this->characterSpace;
     if(prev_code != 0 && this->kerningOn){
@@ -765,29 +743,33 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
     ttHMetric_t hMetric = getHMetric(code);
     uint16_t width = this->characterSize * (glyph.xMax - glyph.xMin) / (this->yMax - this->yMin);
 
-    //Line breaks when reaching the edge of the display
-    if((hMetric.leftSideBearing + width + _x) > this->end_x){
-      _x = this->start_x;
-      _y += this->characterSize;
-      if(_y > this->end_y){
-        break;
-      }
-    }
-
-    //write framebuffer
-    this->generateOutline(hMetric.leftSideBearing + _x, _y, width);
-    for (uint16_t pixel_y = 0; pixel_y < this->characterSize; pixel_y++) {
-      for (uint16_t pixel_x = 0; pixel_x < width; pixel_x++) {
-        //want to fill faster...
-        if (this->isInside(hMetric.leftSideBearing + _x + pixel_x, _y + pixel_y)) {
-          this->addPixel(hMetric.leftSideBearing + _x + pixel_x, _y + pixel_y, this->colorInside);
-        }else{
-          //out of char.
+    //Not compatible with Compound glyphs now
+    if(glyph.numberOfContours >= 0){
+      //Line breaks when reaching the edge of the display
+      if((hMetric.leftSideBearing + width + _x) > this->end_x){
+        _x = this->start_x;
+        _y += this->characterSize;
+        if(_y > this->end_y){
+          break;
         }
       }
+      //write framebuffer
+      this->generateOutline(hMetric.leftSideBearing + _x, _y, width);
+
+      //fill charctor
+      for (uint16_t pixel_y = 0; pixel_y < this->characterSize; pixel_y++) {
+        for (uint16_t pixel_x = 0; pixel_x < width; pixel_x++) {
+          //want to fill faster...
+          if (this->isInside(hMetric.leftSideBearing + _x + pixel_x, _y + pixel_y)) {
+            this->addPixel(hMetric.leftSideBearing + _x + pixel_x, _y + pixel_y, this->colorInside);
+          }else{
+            //out of char.
+          }
+        }
+      }
+      this->freePointsAll();
+      this->freeGlyph();
     }
-    this->freePointsAll();
-    this->freeGlyph();
 
     //Serial.println("---done");
     _x += (hMetric.advanceWidth) ? (hMetric.advanceWidth) : (width);
@@ -795,22 +777,27 @@ void truetypeClass::string(uint16_t _x, uint16_t _y, const wchar_t _character[])
   }
 }
 
-void truetypeClass::string(uint16_t _x, uint16_t _y, const char _character[]){
-  this->string(_x, _y, (wchar_t*)_character);
+void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const char _character[]){
+  this->textDraw(_x, _y, (wchar_t*)_character);
 }
 
-void truetypeClass::string(uint16_t _x, uint16_t _y, const String _string){
+void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const String _string){
   uint16_t length = _string.length();
   wchar_t *character = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
   this->stringToWchar(_string, character);
-  this->string(_x, _y, character);
+  this->textDraw(_x, _y, character);
 }
 
 void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
   //Serial.printf("addPix(%3d, %3d)\n", _x, _y);
   uint8_t *buf_ptr;
 
-  if(_framebufferDirection){
+  //out of range
+  if((_x >= this->displayWidth) || (_y >= this->displayHeight)){
+    return;
+  }
+
+  if(this->framebufferDirection){
     //Framebuffer bit direction: Vertical
   }else{
     //Framebuffer bit direction: Horizontal

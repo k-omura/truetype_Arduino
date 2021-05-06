@@ -22,6 +22,15 @@
 #define FLAG_XSAME (1 << 4)
 #define FLAG_YSAME (1 << 5)
 
+#define TEXT_ALIGN_LEFT 0
+#define TEXT_ALIGN_CENTER 1
+#define TEXT_ALIGN_RIGHT 2
+
+#define Rotate_0 0
+#define Rotate_90 1
+#define Rotate_180 2
+#define Rotate_270 3
+
 typedef struct {
   char name[5];
   uint32_t checkSum;
@@ -130,11 +139,11 @@ class truetypeClass {
     void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer);
     void setCharacterSpacing(int16_t _characterSpace, uint8_t _kerning = 1);
     void setCharacterSize(uint16_t _characterSize);
-    void setStringWidth(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
-    void setStringColor(uint8_t _onLine, uint8_t _inside);
-    void string(uint16_t _x, uint16_t _y, const wchar_t _character[]);
-    void string(uint16_t _x, uint16_t _y, const char _character[]);
-    void string(uint16_t _x, uint16_t _y, const String _string);
+    void textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+    void setTextColor(uint8_t _onLine, uint8_t _inside);
+    void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);
+    void textDraw(uint16_t _x, uint16_t _y, const char _character[]);
+    void textDraw(uint16_t _x, uint16_t _y, const String _string);
 
     void end();
 
