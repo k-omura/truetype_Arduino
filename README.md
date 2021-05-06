@@ -41,11 +41,11 @@ void setup() {
   //TrueType class string parameter settings
   truetype.setCharacterSize(100);
   truetype.setCharacterSpacing(0);
-  truetype.setStringWidth(10, DISPLAY_WIDTH, DISPLAY_HEIGHT);
-  truetype.setStringColor(0x00, 0x00);
+  truetype.textWidthMax(10, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+  truetype.setTextColor(0x00, 0x00);
 
   //Write a string to the framebuffer
-  truetype.string(10, 10, L"The quick brown fox jumps over the lazy dog");
+  truetype.textDraw(10, 10, L"The quick brown fox jumps over the lazy dog");
 
   //Export framebuffer to screen
   FLASH_TO_SCREEN();
@@ -80,31 +80,31 @@ void setup() {
   - Font size setting.  
   - uint16_t _characterSize : Character height.  
 
-- void setStringWidth(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+- void textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
   - Setting the string range.  
   - uint16_t _start_x : The starting point x of the character string when a line break occurs.  
   - uint16_t _end_x : The final point x when breaking a line.  
   - uint16_t _end_y : The final point y when breaking a line.  
 
-- void setStringColor(uint8_t _onLine, uint8_t _inside);  
+- void setTextColor(uint8_t _onLine, uint8_t _inside);  
   - Text color setting.  
   - uint8_t _onLine : Character outline color.  
   - uint8_t _inside : Text fill color.  
 
-- void string(uint16_t _x, uint16_t _y, const wchar_t _character[]);  
+- void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);  
   - Write a string to the framebuffer.  
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
   - const wchar_t _character[] : String pointer (double-byte character).  
 
-- void string(uint16_t _x, uint16_t _y, const char _character[]);  
+- void textDraw(uint16_t _x, uint16_t _y, const char _character[]);  
   - Write a string to the framebuffer.  
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
   - const char _character[] : String pointer (single-byte character).  
   - Under construction  
 
-- void string(uint16_t _x, uint16_t _y, const String _string);  
+- void textDraw(uint16_t _x, uint16_t _y, const String _string);  
   - Write a string to the framebuffer.  
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
@@ -134,7 +134,8 @@ Example with 1bit / 1pixel
 - Kerning by reading the 'kern' table.  
 - Read 'hmtx' table and adjust layout  
 
-# Future work (Issues)  
+# Future work  
+## TrueType  
 - Diversification of supported framebuffer formats.  
 - Only support for 'cmap' format 4 and  'kern' format0 is supported.  
 - Correction that some files can not be read.  
@@ -142,8 +143,11 @@ Example with 1bit / 1pixel
 - Faster glyph reading and write framebuffer.  
 - Decrease usage of SRAM.  
 - Handling of Bezier curve(When exceeding 3 dimensions. Currently, provisional processing).  
-- Make underline available.  
-- Align text to the right.  
+## Draw framebuffer  
+- Align text to the center/right.
+- Rotate 90/180/270
+- Text from the right
+- Underline  
 
 # Confirmed controller  
 - ESP32([Board](https://github.com/espressif/arduino-esp32))  
