@@ -236,9 +236,9 @@ class truetypeClass {
     uint16_t characterSize = 20;
     uint8_t kerningOn = 1;
     int16_t characterSpace = 0;
-    uint16_t start_x = 10;
-    uint16_t end_x = 300;
-    uint16_t end_y = 300;
+    int16_t start_x = 10;
+    int16_t end_x = 300;
+    int16_t end_y = 300;
     uint16_t displayWidth = 400;
     uint16_t displayHeight = 400;
     uint16_t displayWidthFrame = 400;

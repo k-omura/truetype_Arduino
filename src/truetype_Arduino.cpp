@@ -837,11 +837,9 @@ void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
   }
   
   //out of range
-  if(( _x < 0 )||(_x >= this->displayWidth) || (_y >= this->displayHeight)|| ( _y < 0 )){
+  if(( _x < 0 )||((uint16_t)_x >= this->displayWidth) || ((uint16_t)_y >= this->displayHeight)|| ( _y < 0 )){
     return;
   }
-  uint16_t u_x = _x;
-  uint16_t u_y = _y;
   if(this->framebufferDirection){
     //Framebuffer bit direction: Vertical
   }else{
@@ -849,12 +847,12 @@ void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
     switch(this->framebufferBit){
       case 8: //8bit Horizontal
         {
-          this->userFrameBuffer[u_x + u_y * this->displayWidthFrame] = _colorCode;
+          this->userFrameBuffer[(uint16_t)_x + (uint16_t)_y * this->displayWidthFrame] = _colorCode;
         }
         break;
       case 4: //4bit Horizontal
         {
-          buf_ptr = &this->userFrameBuffer[(u_x / 2) + u_y * this->displayWidthFrame];
+          buf_ptr = &this->userFrameBuffer[((uint16_t)_x / 2) + (uint16_t)_y * this->displayWidthFrame];
           _colorCode = _colorCode & 0b00001111;
 
           if ((uint16_t)_x % 2) {
@@ -867,8 +865,8 @@ void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
       case 1: //1bit Horizontal
       default:
         {
-          buf_ptr = &this->userFrameBuffer[(u_x / 8) + u_y * this->displayWidthFrame];
-          uint8_t bitMask = 0b10000000 >> (_x % 8);
+          buf_ptr = &this->userFrameBuffer[((uint16_t)_x / 8) + (uint16_t)_y * this->displayWidthFrame];
+          uint8_t bitMask = 0b10000000 >> ((uint16_t)_x % 8);
           uint8_t bit = (_colorCode) ? (bitMask) : (0b00000000);
           *buf_ptr = (*buf_ptr & ~bitMask) + bit;
         }
