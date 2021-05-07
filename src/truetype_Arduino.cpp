@@ -522,7 +522,7 @@ void truetypeClass::freeGlyph() {
 }
 
 //generate Bitmap
-void truetypeClass::generateOutline(uint16_t _x, uint16_t _y, uint16_t _width) {
+void truetypeClass::generateOutline(int16_t _x, int16_t _y, uint16_t _width) {
   this->points = NULL;
   this->numPoints = 0;
   this->numBeginPoints = 0;
@@ -735,7 +735,7 @@ int truetypeClass::isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate
   return ((_p1.x - _p0.x) * (_point.y - _p0.y) - (_point.x - _p0.x) * (_p1.y - _p0.y));
 }
 
-void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]){
+void truetypeClass::textDraw(int16_t _x, int16_t _y, const wchar_t _character[]){
   uint8_t c = 0;
   uint16_t prev_code = 0;
 
@@ -799,18 +799,18 @@ void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[
   }
 }
 
-void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const char _character[]){
+void truetypeClass::textDraw(int16_t _x, int16_t _y, const char _character[]){
   this->textDraw(_x, _y, (wchar_t*)_character);
 }
 
-void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const String _string){
+void truetypeClass::textDraw(int16_t _x, int16_t _y, const String _string){
   uint16_t length = _string.length();
   wchar_t *character = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
   this->stringToWchar(_string, character);
   this->textDraw(_x, _y, character);
 }
 
-void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
+void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
   //Serial.printf("addPix(%3d, %3d)\n", _x, _y);
   uint8_t *buf_ptr;
 
@@ -835,7 +835,7 @@ void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
   }
 
   //out of range
-  if((_x >= this->displayWidth) || (_y >= this->displayHeight)){
+  if((_x >= this->displayWidth) || (_x < 0) || (_y >= this->displayHeight) || (_y < 0)){
     return;
   }
 
@@ -875,43 +875,47 @@ void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
   return;
 }
 
-ttStringWidth_t truetypeClass::getStringWidth(const wchar_t _character[]){
+uint16_t truetypeClass::getStringWidth(const wchar_t _character[]){
   uint16_t prev_code = 0;
-  ttStringWidth_t output;
+  uint16_t c = 0;
+  uint16_t output = 0;
 
-/*
-  while (_character[output.numberOfCharacters] != '\0') {
+  while (_character[c] != '\0') {
     //space (half-width, full-width)
-    if((_character[output.numberOfCharacters] == ' ') || (_character[output.numberOfCharacters] == '　')){
+    if((_character[c] == ' ') || (_character[c] == '　')){
       prev_code = 0;
-      output.width += this->characterSize / 4;
-      output.numberOfCharacters++;
+      output += this->characterSize / 4;
+      c++;
       continue;
     }
-    uint16_t code = this->codeToGlyphId(_character[output.numberOfCharacters]);
+    uint16_t code = this->codeToGlyphId(_character[c]);
     this->readGlyph(code, 1);
 
-    output.width += this->characterSpace;
+    output += this->characterSpace;
     if(prev_code != 0 && this->kerningOn){
       int16_t kern = this->getKerning(prev_code, code); //space between charctor
-      output.width += (kern * (int16_t)this->characterSize) / (this->yMax - this->yMin);
+      output += (kern * (int16_t)this->characterSize) / (this->yMax - this->yMin);
     }
     prev_code = code;
 
     ttHMetric_t hMetric = getHMetric(code);
     uint16_t width = this->characterSize * (glyph.xMax - glyph.xMin) / (this->yMax - this->yMin);
-
-    //Line breaks when reaching the edge of the display
-    if((hMetric.leftSideBearing + width + output.width) > this->end_x){
-      output.done = 0;
-      break;
-    }
-
-    output.width += (hMetric.advanceWidth) ? (hMetric.advanceWidth) : (width);
-    output.numberOfCharacters++;
+    output += (hMetric.advanceWidth) ? (hMetric.advanceWidth) : (width);
+    c++;
   }
-*/
+
   return output;
+}
+
+uint16_t truetypeClass::getStringWidth(const char _character[]){
+  return this->getStringWidth((wchar_t*)_character);
+}
+
+uint16_t truetypeClass::getStringWidth(const String _string){
+  uint16_t length = _string.length();
+  wchar_t *character = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
+  this->stringToWchar(_string, character);
+  return this->getStringWidth(character);
 }
 
 /* Points*/
