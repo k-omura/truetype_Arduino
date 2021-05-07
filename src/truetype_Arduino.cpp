@@ -76,7 +76,7 @@ void truetypeClass::setCharacterSpacing(int16_t _characterSpace, uint8_t _kernin
   this->kerningOn = _kerning;
 }
 
-void truetypeClass::textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
+void truetypeClass::setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y){
   this->start_x = _start_x;
   this->end_x = _end_x;
   this->end_y = _end_y;
@@ -85,6 +85,26 @@ void truetypeClass::textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _e
 void truetypeClass::setTextColor(uint8_t _onLine, uint8_t _inside){
   this->colorLine = _onLine;
   this->colorInside = _inside;
+}
+
+void truetypeClass::setTextRotation(uint8_t _rotation){
+  switch(_rotation){
+    case ROTATE_90:
+    case 90:
+      _rotation = 1;
+      break;
+    case ROTATE_180:
+    case 180:
+      _rotation = 2;
+      break;
+    case ROTATE_270:
+    case 270:
+      _rotation = 3;
+      break;
+    default:
+      _rotation = 0;
+  }
+  this->stringRotation = _rotation;
 }
 
 /* ----------------private---------------- */
@@ -100,7 +120,6 @@ uint32_t truetypeClass::calculateCheckSum(uint32_t offset, uint32_t length) {
   }
   return checksum;
 }
-
 
 /* read table directory */
 int truetypeClass::readTableDirectory(int checkCheckSum) {
@@ -475,7 +494,7 @@ uint8_t truetypeClass::readSimpleGlyph() {
 }
 
 /* read glyph */
-uint8_t truetypeClass::readGlyph(uint16_t _code) {
+uint8_t truetypeClass::readGlyph(uint16_t _code, uint8_t _justSize) {
   uint32_t offset = this->getGlyphOffset(_code);
   file.seek(offset);
   glyph.numberOfContours = this->getInt16t();
@@ -483,6 +502,10 @@ uint8_t truetypeClass::readGlyph(uint16_t _code) {
   glyph.yMin = this->getInt16t();
   glyph.xMax = this->getInt16t();
   glyph.yMax = this->getInt16t();
+
+  if(_justSize){
+    return 0;
+  }
 
   if (glyph.numberOfContours >= 0) {
     this->readSimpleGlyph();
@@ -495,13 +518,11 @@ uint8_t truetypeClass::readGlyph(uint16_t _code) {
 /* free glyph */
 void truetypeClass::freeGlyph() {
   free(glyph.points);
-    //Serial.println("g-a-a-a-a-a-a-a-a-a-a-a");
   free(glyph.endPtsOfContours);
-    //Serial.println("h-a-a-a-a-a-a-a-a-a-a-a");
 }
 
 //generate Bitmap
-void truetypeClass::generateOutline(uint16_t _x, uint16_t _y, uint16_t _width) {
+void truetypeClass::generateOutline(int16_t _x, int16_t _y, uint16_t _width) {
   this->points = NULL;
   this->numPoints = 0;
   this->numBeginPoints = 0;
@@ -714,7 +735,7 @@ int truetypeClass::isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate
   return ((_p1.x - _p0.x) * (_point.y - _p0.y) - (_point.x - _p0.x) * (_p1.y - _p0.y));
 }
 
-void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]){
+void truetypeClass::textDraw(int16_t _x, int16_t _y, const wchar_t _character[]){
   uint8_t c = 0;
   uint16_t prev_code = 0;
 
@@ -743,16 +764,17 @@ void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[
     ttHMetric_t hMetric = getHMetric(code);
     uint16_t width = this->characterSize * (glyph.xMax - glyph.xMin) / (this->yMax - this->yMin);
 
+    //Line breaks when reaching the edge of the display
+    if((hMetric.leftSideBearing + width + _x) > this->end_x){
+      _x = this->start_x;
+      _y += this->characterSize;
+      if(_y > this->end_y){
+        break;
+      }
+    }
+
     //Not compatible with Compound glyphs now
     if(glyph.numberOfContours >= 0){
-      //Line breaks when reaching the edge of the display
-      if((hMetric.leftSideBearing + width + _x) > this->end_x){
-        _x = this->start_x;
-        _y += this->characterSize;
-        if(_y > this->end_y){
-          break;
-        }
-      }
       //write framebuffer
       this->generateOutline(hMetric.leftSideBearing + _x, _y, width);
 
@@ -777,23 +799,43 @@ void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[
   }
 }
 
-void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const char _character[]){
+void truetypeClass::textDraw(int16_t _x, int16_t _y, const char _character[]){
   this->textDraw(_x, _y, (wchar_t*)_character);
 }
 
-void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const String _string){
+void truetypeClass::textDraw(int16_t _x, int16_t _y, const String _string){
   uint16_t length = _string.length();
   wchar_t *character = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
   this->stringToWchar(_string, character);
   this->textDraw(_x, _y, character);
 }
 
-void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
+void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
   //Serial.printf("addPix(%3d, %3d)\n", _x, _y);
   uint8_t *buf_ptr;
 
+  //Rotate
+  uint16_t temp = _x;
+  switch(this->stringRotation){
+    case 3:
+      _x = _y;
+      _y = this->displayHeight - 1 - temp;
+      break;
+    case 2:
+      _x = this->displayWidth - 1 - _x;
+      _y = this->displayHeight - 1 - _y;
+      break;
+    case 1:
+      _x = this->displayWidth - 1 - _y;
+      _y = temp;
+      break;
+    case 0:
+    default:
+      break;
+  }
+
   //out of range
-  if((_x >= this->displayWidth) || (_y >= this->displayHeight)){
+  if((_x >= this->displayWidth) || (_x < 0) || (_y >= this->displayHeight) || (_y < 0)){
     return;
   }
 
@@ -831,6 +873,49 @@ void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
     }
   }
   return;
+}
+
+uint16_t truetypeClass::getStringWidth(const wchar_t _character[]){
+  uint16_t prev_code = 0;
+  uint16_t c = 0;
+  uint16_t output = 0;
+
+  while (_character[c] != '\0') {
+    //space (half-width, full-width)
+    if((_character[c] == ' ') || (_character[c] == '　')){
+      prev_code = 0;
+      output += this->characterSize / 4;
+      c++;
+      continue;
+    }
+    uint16_t code = this->codeToGlyphId(_character[c]);
+    this->readGlyph(code, 1);
+
+    output += this->characterSpace;
+    if(prev_code != 0 && this->kerningOn){
+      int16_t kern = this->getKerning(prev_code, code); //space between charctor
+      output += (kern * (int16_t)this->characterSize) / (this->yMax - this->yMin);
+    }
+    prev_code = code;
+
+    ttHMetric_t hMetric = getHMetric(code);
+    uint16_t width = this->characterSize * (glyph.xMax - glyph.xMin) / (this->yMax - this->yMin);
+    output += (hMetric.advanceWidth) ? (hMetric.advanceWidth) : (width);
+    c++;
+  }
+
+  return output;
+}
+
+uint16_t truetypeClass::getStringWidth(const char _character[]){
+  return this->getStringWidth((wchar_t*)_character);
+}
+
+uint16_t truetypeClass::getStringWidth(const String _string){
+  uint16_t length = _string.length();
+  wchar_t *character = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
+  this->stringToWchar(_string, character);
+  return this->getStringWidth(character);
 }
 
 /* Points*/
