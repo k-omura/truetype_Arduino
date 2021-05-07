@@ -16,10 +16,10 @@ https://developer.apple.com/fonts/TrueType-Reference-Manual/
 ```
 //TrueType class declaration
 truetypeClass truetype = truetypeClass();
+uint8_t *framebuffer; 
 
 void setup() {
   //Prepare a frame buffer
-  uint8_t *framebuffer; 
   framebuffer = (uint8_t *)calloc(sizeof(uint8_t), FRAMEBUFFER_SIZE);
 
   //Read TrueType file
