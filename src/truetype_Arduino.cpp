@@ -40,7 +40,7 @@ uint8_t truetypeClass::setTtfFile(File _file, uint8_t _checkCheckSum){
   return 1;
 }
 
-void truetypeClass::setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer) {
+void truetypeClass::setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint16_t _framebufferDirection, uint8_t *_framebuffer) {
   this->displayWidth = _framebufferWidth;
   this->displayHeight = _framebufferHeight;
   this->framebufferBit = _framebuffer_bit;
@@ -87,7 +87,7 @@ void truetypeClass::setTextColor(uint8_t _onLine, uint8_t _inside){
   this->colorInside = _inside;
 }
 
-void truetypeClass::setTextRotation(uint8_t _rotation){
+void truetypeClass::setTextRotation(uint16_t _rotation){
   switch(_rotation){
     case ROTATE_90:
     case 90:
@@ -816,16 +816,16 @@ void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
 
   //Rotate
   uint16_t temp = _x;
-  switch(this->stringRotation){
-    case 3:
+ switch(this->stringRotation){
+    case ROTATE_270:
       _x = _y;
       _y = this->displayHeight - 1 - temp;
       break;
-    case 2:
+    case ROTATE_180:
       _x = this->displayWidth - 1 - _x;
       _y = this->displayHeight - 1 - _y;
       break;
-    case 1:
+    case ROTATE_90:
       _x = this->displayWidth - 1 - _y;
       _y = temp;
       break;
@@ -833,7 +833,7 @@ void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
     default:
       break;
   }
-
+  
   //out of range
   if((_x >= this->displayWidth) || (_y >= this->displayHeight)){
     return;

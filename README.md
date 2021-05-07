@@ -61,13 +61,16 @@ void setup() {
   - File _file : ttf file.  
   - Return : 1 = read successful, 0 = read failure.  
 
-- void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer);  
+- void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint16_t _framebufferDirection, uint8_t *_framebuffer);  
   - Framebuffer settings.
   - uint16_t _framebufferWidth : Framebuffer width.  
   - uint16_t _framebufferHeight : Framebuffer eight.
   - uint16_t _framebuffer_bit : The number of bits per pixel. (1,4,8bit implemented)
-  - uint8_t _framebufferDirection : Bit orientation.
-    - [See Framebuffer format](#Framebuffer-format)  
+  - uint16_t _framebufferDirection : Bit orientation.
+    - [See Framebuffer format](#Framebuffer-format)
+    - 90 or  1 = 90 degrees
+    - 180 or 2 = 180 degrees
+    - 270 or 3 = 270 degrees
   - uint8_t *_framebuffer : Framebuffer pointer.  
   - If you want it to correspond to your own framebuffer, edit the addPixel function. If you add code, please share it!
 
@@ -92,15 +95,18 @@ void setup() {
   - uint8_t _inside : Text fill color.  
 
 - void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);  
-  - Write a string to the framebuffer.  
+  - Write a string to the framebuffer.
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
+  - _x and _y are relative to the top left corner in the configured rotation.   
   - const wchar_t _character[] : String pointer (double-byte character).  
 
 - void textDraw(uint16_t _x, uint16_t _y, const char _character[]);  
   - Write a string to the framebuffer.  
+  - This is relative to the top left corner in the configured rotation.   
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
+  - _x and _y are relative to the top left corner in the configured rotation.   
   - const char _character[] : String pointer (single-byte character).  
   - Under construction  
 
@@ -108,6 +114,7 @@ void setup() {
   - Write a string to the framebuffer.  
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
+  - _x and _y are relative to the top left corner in the configured rotation.   
   - const String _string : String pointer (String type).  
 
 - void end();  

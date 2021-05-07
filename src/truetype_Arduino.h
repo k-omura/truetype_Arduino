@@ -141,12 +141,13 @@ class truetypeClass {
     truetypeClass();
 
     uint8_t setTtfFile(File _file, uint8_t _checkCheckSum = 0);
-    void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer);
+    void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint16_t _framebufferDirection, uint8_t *_framebuffer);
     void setCharacterSpacing(int16_t _characterSpace, uint8_t _kerning = 1);
     void setCharacterSize(uint16_t _characterSize);
     void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
     void setTextColor(uint8_t _onLine, uint8_t _inside);
-    void setTextRotation(uint8_t _rotation);
+#define setTextColour setTextColor //this would work in C just not sure about C++
+    void setTextRotation(uint16_t _rotation); //needs to be 16 as 270 degrees blows out 8 bits
     void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);
     void textDraw(uint16_t _x, uint16_t _y, const char _character[]);
     void textDraw(uint16_t _x, uint16_t _y, const String _string);
@@ -253,4 +254,5 @@ class truetypeClass {
 
     uint8_t GetU8ByteCount(char _ch);
     bool IsU8LaterByte(char _ch);
+
 };
