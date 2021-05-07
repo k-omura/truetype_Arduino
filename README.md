@@ -3,7 +3,8 @@ Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.
 
 - Read TrueType files ('cmap' format4).  
 - Write any string to the user's framebuffer.  
-- Set font size, position, color, and spacing.  
+- Set font size, position, color, spacing, Rotate.  
+- Centered and right aligned strings. By getting the length of the string.  
 - Read the 'kern' table (format0) and kerning.  
 - Beautifully arrange characters based on the 'hmtx' table.  
 <img src="https://user-images.githubusercontent.com/26690530/116971484-99f68600-acf4-11eb-99c6-d5e29791b53f.JPG" width="500">
@@ -41,7 +42,7 @@ void setup() {
   //TrueType class string parameter settings
   truetype.setCharacterSize(100);
   truetype.setCharacterSpacing(0);
-  truetype.textWidthMax(10, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+  truetype.setTextBoundary(10, DISPLAY_WIDTH, DISPLAY_HEIGHT);
   truetype.setTextColor(0x00, 0x00);
 
   //Write a string to the framebuffer
@@ -80,7 +81,7 @@ void setup() {
   - Font size setting.  
   - uint16_t _characterSize : Character height.  
 
-- void textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+- void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
   - Setting the string range.  
   - uint16_t _start_x : The starting point x of the character string when a line break occurs.  
   - uint16_t _end_x : The final point x when breaking a line.  
@@ -90,6 +91,14 @@ void setup() {
   - Text color setting.  
   - uint8_t _onLine : Character outline color.  
   - uint8_t _inside : Text fill color.  
+
+- void setTextRotation(uint8_t _rotation);
+  - Text rotation
+    - Rotate along with the coordinate axes. The image is the following image.  
+<img src="https://user-images.githubusercontent.com/26690530/117451729-d983d300-af7d-11eb-9914-bfaf59b01075.png" width="400">
+
+  - uint8_t _rotation : rotation angle.
+    - (ROTATE_0/ROTATE_90/ROTATE_180/ROTATE_270)  
 
 - void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);  
   - Write a string to the framebuffer.  
@@ -109,6 +118,22 @@ void setup() {
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
   - const String _string : String pointer (String type).  
+
+- uint16_t getStringWidth(const wchar_t _character[]);
+  - const wchar_t _character[] : String pointer (double-byte character).  
+  - Return : The length of the string. Automatic line breaks are not considered.
+    - Can be used for text align center/right.  
+
+- uint16_t getStringWidth(const char _character[]);
+  - const char _character[] : String pointer (single-byte character).  
+  - Return : The length of the string. Automatic line breaks are not considered.
+    - Can be used for text align center/right.  
+  - Under construction  
+
+- uint16_t getStringWidth(const String _string);
+  - const String _string : String pointer (String type).  
+  - Return : The length of the string. Automatic line breaks are not considered.
+    - Can be used for text align center/right.  
 
 - void end();  
   - Close font file.  
@@ -145,8 +170,6 @@ Example with 1bit / 1pixel
 - Decrease usage of SRAM.  
 - Handling of Bezier curve(When exceeding 3 dimensions. Currently, provisional processing).  
 ## Draw framebuffer  
-- Align text to the center/right.
-- Rotate 90/180/270
 - Text from the right
 - Underline  
 
