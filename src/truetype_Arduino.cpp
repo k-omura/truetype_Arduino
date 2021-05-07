@@ -883,26 +883,27 @@ void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
 ttStringWidth_t truetypeClass::getStringWidth(const wchar_t _character[]){
   uint16_t prev_code = 0;
   ttStringWidth_t output;
-
 /*
   while (_character[output.numberOfCharacters] != '\0') {
     //space (half-width, full-width)
-    if((_character[output.numberOfCharacters] == ' ') || (_character[output.numberOfCharacters] == '　')){
+    if((_character[output.numberOfCharacters] == ' ') || (_character[output.numberOfCharacters] == L'　')){
       prev_code = 0;
       output.width += this->characterSize / 4;
       output.numberOfCharacters++;
       continue;
     }
+    if((_character[output.numberOfCharacters] == '\n' || (_character[output.numberOfCharacters] == '\r'){
+      output.done = 0;
+      break;
+    }
     uint16_t code = this->codeToGlyphId(_character[output.numberOfCharacters]);
     this->readGlyph(code, 1);
-
     output.width += this->characterSpace;
     if(prev_code != 0 && this->kerningOn){
       int16_t kern = this->getKerning(prev_code, code); //space between charctor
       output.width += (kern * (int16_t)this->characterSize) / (this->yMax - this->yMin);
     }
     prev_code = code;
-
     ttHMetric_t hMetric = getHMetric(code);
     uint16_t width = this->characterSize * (glyph.xMax - glyph.xMin) / (this->yMax - this->yMin);
 
