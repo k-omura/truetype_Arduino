@@ -146,7 +146,8 @@ class truetypeClass {
     void setCharacterSize(uint16_t _characterSize);
     void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
     void setTextColor(uint8_t _onLine, uint8_t _inside);
-#define setTextColour setTextColor //this would work in C just not sure about C++
+#define setTextColour setTextColor //to satisfy a pedantic old Australian
+    void setTextJustification(uint8_t _justify);
     void setTextRotation(uint16_t _rotation); //needs to be 16 as 270 degrees blows out 8 bits
     void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);
     void textDraw(uint16_t _x, uint16_t _y, const char _character[]);
@@ -245,6 +246,7 @@ class truetypeClass {
     uint16_t framebufferBit = 8;
     uint8_t framebufferDirection = 0;
     uint8_t stringRotation = 0x00;
+    uint8_t stringJustification = 0x00;
     uint8_t colorLine = 0x00;
     uint8_t colorInside = 0x00;
     uint8_t *userFrameBuffer;

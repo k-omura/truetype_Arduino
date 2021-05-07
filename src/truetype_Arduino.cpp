@@ -107,6 +107,11 @@ void truetypeClass::setTextRotation(uint16_t _rotation){
   this->stringRotation = _rotation;
 }
 
+void truetypeClass::setTextJustification(uint8_t _justify){
+  if(_justify > 2) _justify = TEXT_ALIGN_LEFT;
+  this->stringJustification = _justify;
+}
+
 /* ----------------private---------------- */
 /* calculate checksum */
 uint32_t truetypeClass::calculateCheckSum(uint32_t offset, uint32_t length) {
@@ -738,10 +743,10 @@ int truetypeClass::isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate
 void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]){
   uint8_t c = 0;
   uint16_t prev_code = 0;
-
+  
   while (_character[c] != '\0') {
     //space (half-width, full-width)
-    if((_character[c] == ' ') || (_character[c] == '　')){
+    if((_character[c] == ' ') || (_character[c] == L'　')){
       prev_code = 0;
       _x += this->characterSize / 4;
       c++;

@@ -66,7 +66,7 @@ void setup() {
   - uint16_t _framebufferWidth : Framebuffer width.  
   - uint16_t _framebufferHeight : Framebuffer eight.
   - uint16_t _framebuffer_bit : The number of bits per pixel. (1,4,8bit implemented)
-  - uint16_t _framebufferDirection : Bit orientation.
+  - uint16_t _framebufferDirection : Text rotation.
     - [See Framebuffer format](#Framebuffer-format)
     - 90 or  1 = 90 degrees
     - 180 or 2 = 180 degrees
@@ -83,8 +83,8 @@ void setup() {
   - Font size setting.  
   - uint16_t _characterSize : Character height.  
 
-- void textWidthMax(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
-  - Setting the string range.  
+- void textWidthBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+  - Setting the bounds of the text.  
   - uint16_t _start_x : The starting point x of the character string when a line break occurs.  
   - uint16_t _end_x : The final point x when breaking a line.  
   - uint16_t _end_y : The final point y when breaking a line.  
@@ -93,6 +93,14 @@ void setup() {
   - Text color setting.  
   - uint8_t _onLine : Character outline color.  
   - uint8_t _inside : Text fill color.  
+  - uint16_t _framebufferDirection : Bit orientation.
+
+- void setTextRotation(uint16_t _rotation)
+  - _rotation 
+  - 0 = 0 degrees the base rotation of the buffer
+  - 90 or  1 text co-ordinates are rotated 90 degrees
+  - 180 or 2 = 180 degrees
+  - 270 or 3 = 270 degrees
 
 - void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);  
   - Write a string to the framebuffer.
