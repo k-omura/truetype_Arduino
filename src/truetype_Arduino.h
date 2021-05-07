@@ -131,11 +131,6 @@ typedef struct {
   int16_t leftSideBearing;
 } ttHMetric_t;
 
-typedef struct {
-  uint16_t numOfLine;
-  uint16_t *widthPerLine;
-} ttStringWidth_t;
-
 class truetypeClass {
   public:
     truetypeClass();
@@ -147,9 +142,14 @@ class truetypeClass {
     void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
     void setTextColor(uint8_t _onLine, uint8_t _inside);
     void setTextRotation(uint8_t _rotation);
-    void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);
-    void textDraw(uint16_t _x, uint16_t _y, const char _character[]);
-    void textDraw(uint16_t _x, uint16_t _y, const String _string);
+
+    uint16_t getStringWidth(const wchar_t _character[]);
+    uint16_t getStringWidth(const char _character[]);
+    uint16_t getStringWidth(const String _string);
+
+    void textDraw(int16_t _x, int16_t _y, const wchar_t _character[]);
+    void textDraw(int16_t _x, int16_t _y, const char _character[]);
+    void textDraw(int16_t _x, int16_t _y, const String _string);
 
     void end();
 
@@ -216,7 +216,7 @@ class truetypeClass {
 
     //glyf
     ttGlyph_t glyph;
-    void generateOutline(uint16_t _x, uint16_t _y, uint16_t _width);
+    void generateOutline(int16_t _x, int16_t _y, uint16_t _width);
     void freePointsAll();
     bool isInside(int16_t _x, int16_t _y);
     uint8_t readGlyph(uint16_t code, uint8_t _justSize = 0);
@@ -247,9 +247,8 @@ class truetypeClass {
     uint8_t colorLine = 0x00;
     uint8_t colorInside = 0x00;
     uint8_t *userFrameBuffer;
-    void addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode);
+    void addPixel(int16_t _x, int16_t _y, uint8_t _colorCode);
     void stringToWchar(String _string, wchar_t _charctor[]);
-    ttStringWidth_t getStringWidth(const wchar_t _character[]);
 
     uint8_t GetU8ByteCount(char _ch);
     bool IsU8LaterByte(char _ch);
