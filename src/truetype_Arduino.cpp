@@ -732,7 +732,6 @@ bool truetypeClass::isInside(int16_t _x, int16_t _y) {
       }
     }
   }
-
   return (windingNumber != 0);
 }
 
@@ -807,19 +806,21 @@ void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[
 void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const char _character[]){
   this->textDraw(_x, _y, (wchar_t*)_character);
 }
-
+#ifdef ARDUINO
 void truetypeClass::textDraw(uint16_t _x, uint16_t _y, const String _string){
   uint16_t length = _string.length();
   wchar_t *character = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
   this->stringToWchar(_string, character);
   this->textDraw(_x, _y, character);
 }
-
+#endif
 void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
   //Serial.printf("addPix(%3d, %3d)\n", _x, _y);
+  // limit to boundary co-ordinates the boundary is always in the same orientation as the string not the buffer
+  if (( _x < this->start_x )||(_x >= this->end_x) || (_y >= this->end_y))
+    return;
   uint8_t *buf_ptr;
-
-  //Rotate
+  //Rotate co-ordinates relative to the buffer 
   uint16_t temp = _x;
  switch(this->stringRotation){
     case ROTATE_270:
@@ -881,27 +882,29 @@ void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
   return;
 }
 
-ttStringWidth_t truetypeClass::getStringWidth(const wchar_t _character[]){
+ttStringWidth_t truetypeClass::getStringWidth(const wchar_t _character[], uint16_t _character_position){
   uint16_t prev_code = 0;
   ttStringWidth_t output;
-/*
-  while (_character[output.numberOfCharacters] != '\0') {
+  output.width = 0;
+  output.charactersDrawn = _character_position;
+  
+  while (_character[output.charactersDrawn] != '\0') {
     //space (half-width, full-width)
-    if((_character[output.numberOfCharacters] == ' ') || (_character[output.numberOfCharacters] == L'　')){
+    if((_character[output.charactersDrawn] == ' ') || (_character[output.charactersDrawn] == L'　')){
       prev_code = 0;
-      output.width += this->characterSize / 4;
-      output.numberOfCharacters++;
+      output.width += this->characterSize / 4; // i would like to add a variable sized space variable with this being the default
+      output.charactersDrawn++;
       continue;
     }
-    if((_character[output.numberOfCharacters] == '\n' || (_character[output.numberOfCharacters] == '\r'){
-      output.done = 0;
+    if((_character[output.charactersDrawn] == '\n') || (_character[output.charactersDrawn] == '\r')){
+      //~ output.done = 0;
       break;
     }
-    uint16_t code = this->codeToGlyphId(_character[output.numberOfCharacters]);
+    uint16_t code = this->codeToGlyphId(_character[output.charactersDrawn]);
     this->readGlyph(code, 1);
     output.width += this->characterSpace;
     if(prev_code != 0 && this->kerningOn){
-      int16_t kern = this->getKerning(prev_code, code); //space between charctor
+      int16_t kern = this->getKerning(prev_code, code); //space between character
       output.width += (kern * (int16_t)this->characterSize) / (this->yMax - this->yMin);
     }
     prev_code = code;
@@ -910,14 +913,12 @@ ttStringWidth_t truetypeClass::getStringWidth(const wchar_t _character[]){
 
     //Line breaks when reaching the edge of the display
     if((hMetric.leftSideBearing + width + output.width) > this->end_x){
-      output.done = 0;
+      //~ output.done = 0;   not sure what your intention was here but we do need a way to know the string has terminated 
       break;
     }
-
     output.width += (hMetric.advanceWidth) ? (hMetric.advanceWidth) : (width);
-    output.numberOfCharacters++;
+    output.charactersDrawn++;
   }
-*/
   return output;
 }
 
@@ -976,7 +977,7 @@ uint32_t truetypeClass::seekToTable(const char *name) {
   }
   return 0;
 }
-
+#ifdef ARDUINO
 /* calculate */
 void truetypeClass::stringToWchar(String _string, wchar_t _charctor[]) {
   uint16_t s = 0;
@@ -1049,7 +1050,7 @@ void truetypeClass::stringToWchar(String _string, wchar_t _charctor[]) {
   }
   _charctor[c] = 0;
 }
-
+#endif
 uint8_t truetypeClass::GetU8ByteCount(char _ch) {
   if (0 <= uint8_t(_ch) && uint8_t(_ch) < 0x80) {
     return 1;

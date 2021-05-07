@@ -5,6 +5,10 @@
  * This example simply creates a bitmap 
  * with your text written on it 
  * using the ttf file you supply
+ * This is a good routine to test fonts
+ * for compatiblity.
+ * It is easier to see if you use 1 bit per pixel 
+ * however it works just the same for 4 and 8
  * 
  * It rotates the text in all four directions 
  * 
@@ -30,7 +34,7 @@
 #define DISPLAY_WIDTH WIDTH_PIXELS
 #define BITS_PER_PIXEL 8 // either 1, 4, or 8
 
-#define WIDTH_BYTES WIDTH_PIXELS * (8 / BITS_PER_PIXEL)
+#define WIDTH_BYTES WIDTH_PIXELS / (8 / BITS_PER_PIXEL)
 #define FRAMEBUFFER_SIZE ( WIDTH_BYTES * HEIGHT_PIXELS)
 
 #define MY_TTF "/FONTFILE.ttf"
@@ -44,7 +48,7 @@ void print_bitmap(uint8_t *framebuffer, uint16_t width_in_bytes, uint16_t height
       Serial.println();
     for (uint8_t bits = 8; bits > 0; bits--) {
       if (_BV(bits - 1) & framebuffer[i])
-        Serial.print("_");
+        Serial.print(" ");
       else
         Serial.print("#");
     }

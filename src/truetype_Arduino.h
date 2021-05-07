@@ -132,8 +132,8 @@ typedef struct {
 } ttHMetric_t;
 
 typedef struct {
-  uint16_t numOfLine;
-  uint16_t *widthPerLine;
+  uint16_t width;
+  uint16_t charactersDrawn;
 } ttStringWidth_t;
 
 class truetypeClass {
@@ -151,8 +151,9 @@ class truetypeClass {
     void setTextRotation(uint16_t _rotation); //needs to be 16 as 270 degrees blows out 8 bits
     void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);
     void textDraw(uint16_t _x, uint16_t _y, const char _character[]);
+#ifdef ARDUINO    
     void textDraw(uint16_t _x, uint16_t _y, const String _string);
-
+#endif
     void end();
 
   private:
@@ -251,8 +252,10 @@ class truetypeClass {
     uint8_t colorInside = 0x00;
     uint8_t *userFrameBuffer;
     void addPixel(int16_t _x, int16_t _y, uint8_t _colorCode);
+#ifdef ARDUINO    
     void stringToWchar(String _string, wchar_t _charctor[]);
-    ttStringWidth_t getStringWidth(const wchar_t _character[]);
+#endif
+    ttStringWidth_t getStringWidth(const wchar_t _character[], uint16_t _character_position);
 
     uint8_t GetU8ByteCount(char _ch);
     bool IsU8LaterByte(char _ch);
