@@ -48,9 +48,9 @@ void print_bitmap(uint8_t *framebuffer, uint16_t width_in_bytes, uint16_t height
       Serial.println();
     for (uint8_t bits = 8; bits > 0; bits--) {
       if (_BV(bits - 1) & framebuffer[i])
-        Serial.print(" ");
+        Serial.print("+"); // bit is set
       else
-        Serial.print("#");
+        Serial.print(" "); // bit is clear
     }
     // Serial.print(" "); // uncomment to show individual bytes
   }
