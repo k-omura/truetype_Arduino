@@ -87,7 +87,7 @@ void truetypeClass::setTextColor(uint8_t _onLine, uint8_t _inside){
   this->colorInside = _inside;
 }
 
-void truetypeClass::setTextRotation(uint8_t _rotation){
+void truetypeClass::setTextRotation(uint16_t _rotation){
   switch(_rotation){
     case ROTATE_90:
     case 90:
@@ -816,7 +816,6 @@ void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
 // limit to boundary co-ordinates the boundary is always in the same orientation as the string not the buffer
   if (( _x < this->start_x )||(_x >= this->end_x) || (_y >= this->end_y))
     return;
-  uint8_t *buf_ptr;
   //Rotate co-ordinates relative to the buffer 
   uint16_t temp = _x;
  switch(this->stringRotation){

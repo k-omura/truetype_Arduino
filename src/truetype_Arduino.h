@@ -142,7 +142,7 @@ class truetypeClass {
     void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
     void setTextColor(uint8_t _onLine, uint8_t _inside);
 #define setTextColour setTextColor //to satisfy a pedantic old Australian
-    void setTextRotation(uint8_t _rotation);
+    void setTextRotation(uint16_t _rotation);
 
     uint16_t getStringWidth(const wchar_t _character[]);
     uint16_t getStringWidth(const char _character[]);
