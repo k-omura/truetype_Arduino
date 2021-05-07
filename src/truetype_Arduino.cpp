@@ -878,8 +878,8 @@ void truetypeClass::addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode) {
 ttStringWidth_t truetypeClass::getStringWidth(const wchar_t _character[]){
   uint16_t prev_code = 0;
   ttStringWidth_t output;
-  output.done = 1;
 
+/*
   while (_character[output.numberOfCharacters] != '\0') {
     //space (half-width, full-width)
     if((_character[output.numberOfCharacters] == ' ') || (_character[output.numberOfCharacters] == '　')){
@@ -910,7 +910,7 @@ ttStringWidth_t truetypeClass::getStringWidth(const wchar_t _character[]){
     output.width += (hMetric.advanceWidth) ? (hMetric.advanceWidth) : (width);
     output.numberOfCharacters++;
   }
-
+*/
   return output;
 }
 
