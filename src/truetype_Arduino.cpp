@@ -741,7 +741,7 @@ void truetypeClass::textDraw(int16_t _x, int16_t _y, const wchar_t _character[])
 
   while (_character[c] != '\0') {
     //space (half-width, full-width)
-    if((_character[c] == ' ') || (_character[c] == '　')){
+    if((_character[c] == ' ') || (_character[c] == L'　')){
       prev_code = 0;
       _x += this->characterSize / 4;
       c++;
