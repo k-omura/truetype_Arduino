@@ -250,7 +250,7 @@ class truetypeClass {
     uint8_t colorLine = 0x00;
     uint8_t colorInside = 0x00;
     uint8_t *userFrameBuffer;
-    void addPixel(uint16_t _x, uint16_t _y, uint8_t _colorCode);
+    void addPixel(int16_t _x, int16_t _y, uint8_t _colorCode);
     void stringToWchar(String _string, wchar_t _charctor[]);
     ttStringWidth_t getStringWidth(const wchar_t _character[]);
 
