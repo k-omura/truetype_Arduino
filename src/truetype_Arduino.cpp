@@ -103,6 +103,7 @@ void truetypeClass::setTextRotation(uint16_t _rotation){
       break;
     default:
       _rotation = 0;
+      break;
   }
   this->stringRotation = _rotation;
 }
@@ -401,11 +402,11 @@ uint32_t truetypeClass::getGlyphOffset(uint16_t index) {
 }
 
 /* read coords */
-void truetypeClass::readCoords(char xy) {
-  int value = 0;
-  int shortFlag, sameFlag;
+void truetypeClass::readCoords(char _xy, uint16_t _startPoint) {
+  int16_t value = 0;
+  uint8_t shortFlag, sameFlag;
 
-  if (xy == 'x') {
+  if (_xy == 'x') {
     shortFlag = FLAG_XSHORT;
     sameFlag = FLAG_XSAME;
   } else {
@@ -413,7 +414,7 @@ void truetypeClass::readCoords(char xy) {
     sameFlag = FLAG_YSAME;
   }
 
-  for (int i = 0; i < glyph.numberOfPoints; i++) {
+  for (uint16_t i = _startPoint; i < glyph.numberOfPoints; i++) {
     if (glyph.points[i].flag & shortFlag) {
       if (glyph.points[i].flag & sameFlag) {
         value += this->getUInt8t();
@@ -424,59 +425,64 @@ void truetypeClass::readCoords(char xy) {
       value += this->getUInt16t();
     }
 
-    if (xy == 'x') {
-      glyph.points[i].x = value;
+    if (_xy == 'x') {
+      if(this->glyphTransformation.enableScale){
+        glyph.points[i].x = value + this->glyphTransformation.dx;
+      }else{
+        glyph.points[i].x = value + this->glyphTransformation.dx;
+      }
     } else {
-      glyph.points[i].y = value;
+      if(this->glyphTransformation.enableScale){
+        glyph.points[i].y = value + this->glyphTransformation.dy;
+      }else{
+        glyph.points[i].y = value + this->glyphTransformation.dy;
+      }
     }
   }
 }
 
-/* insert a point at the specified position */
-void truetypeClass::insertGlyph(int contour, int position, int16_t x, int16_t y, uint8_t flag) {
-  glyph.numberOfPoints++;
-  glyph.points = (ttPoint_t *)realloc(glyph.points, sizeof(ttPoint_t) * glyph.numberOfPoints);
-
-  for (int k = contour; k < glyph.numberOfContours; k++) {
-    glyph.endPtsOfContours[k]++;
-  }
-
-  for (int i = glyph.numberOfPoints - 1; i >= position; i--) {
-    glyph.points[i] = glyph.points[i - 1];
-  }
-  glyph.points[position].flag = flag;
-  glyph.points[position].x = x;
-  glyph.points[position].y = y;
-}
-
 /* read simple glyph */
-uint8_t truetypeClass::readSimpleGlyph() {
-  int repeatCount;
+uint8_t truetypeClass::readSimpleGlyph(uint8_t _addGlyph) {
+  uint8_t repeatCount;
   uint8_t flag;
+  static uint16_t counterContours;
+  static uint16_t counterPoints;
 
-  if (glyph.numberOfContours == 0) {
+  if (glyph.numberOfContours <= 0) {
     return 0;
   }
 
-  glyph.endPtsOfContours = (uint16_t *)malloc((sizeof(uint16_t) * glyph.numberOfContours));
+  if(!_addGlyph){
+    counterContours = 0;
+    counterPoints = 0;
+  }
 
-  for (int i = 0; i < glyph.numberOfContours; i++) {
-    glyph.endPtsOfContours[i] = this->getUInt16t();
+  if(_addGlyph){
+    glyph.endPtsOfContours = (uint16_t *)realloc(glyph.endPtsOfContours, (sizeof(uint16_t) * glyph.numberOfContours));
+  }else{
+    glyph.endPtsOfContours = (uint16_t *)malloc((sizeof(uint16_t) * glyph.numberOfContours));
+  }
+
+  for (uint16_t i = counterContours; i < glyph.numberOfContours; i++) {
+    glyph.endPtsOfContours[i] = counterPoints + this->getUInt16t();
   }
 
   file.seek(this->getUInt16t() + file.position());
 
-  glyph.numberOfPoints = 0;
-  for (int i = 0; i < glyph.numberOfContours; i++) {
+  for (uint16_t i = counterContours; i < glyph.numberOfContours; i++) {
     if (glyph.endPtsOfContours[i] > glyph.numberOfPoints) {
       glyph.numberOfPoints = glyph.endPtsOfContours[i];
     }
   }
   glyph.numberOfPoints++;
 
-  glyph.points = (ttPoint_t *)malloc(sizeof(ttPoint_t) * (glyph.numberOfPoints + glyph.numberOfContours));
+  if(_addGlyph){
+    glyph.points = (ttPoint_t *)realloc(glyph.points, sizeof(ttPoint_t) * (glyph.numberOfPoints + glyph.numberOfContours));
+  }else{
+    glyph.points = (ttPoint_t *)malloc(sizeof(ttPoint_t) * (glyph.numberOfPoints + glyph.numberOfContours));
+  }
 
-  for (int i = 0; i < glyph.numberOfPoints; i++) {
+  for (uint16_t i = counterPoints; i < glyph.numberOfPoints; i++) {
     flag = this->getUInt8t();
     glyph.points[i].flag = flag;
     if (flag & FLAG_REPEAT) {
@@ -487,8 +493,71 @@ uint8_t truetypeClass::readSimpleGlyph() {
     }
   }
 
-  this->readCoords('x');
-  this->readCoords('y');
+  this->readCoords('x', counterPoints);
+  this->readCoords('y', counterPoints);
+
+  counterContours = glyph.numberOfContours;
+  counterPoints = glyph.numberOfPoints;
+
+  return 1;
+}
+
+/* read Compound glyph */
+uint8_t truetypeClass::readCompoundGlyph() {
+  uint16_t glyphIndex;
+  uint16_t flags;
+  uint8_t numberOfGlyphs = 0;
+  uint32_t offset;
+  int32_t arg1, arg2;
+
+  glyph.numberOfContours = 0;
+
+  //Serial.println("---CompoundGlyph---");
+
+  do{
+    flags = this->getUInt16t();
+    glyphIndex = this->getUInt16t();
+
+    this->glyphTransformation.enableScale = (flags & 0b00000001000) ? (1) : (0);
+
+    if(flags & 0b00000000001){
+      arg1 = this->getInt16t();
+      arg2 = this->getInt16t();
+    }else{
+      arg1 = this->getUInt8t();
+      arg2 = this->getUInt8t();
+    }
+
+    if(flags & 0b00000000010){
+      this->glyphTransformation.dx = arg1;
+      this->glyphTransformation.dy = arg2;
+    }
+
+    if(flags & 0b01000000000){
+      this->charCode = glyphIndex;
+    }
+
+    //Serial.printf("--%d: flag: 0x%04X index: %4d\n", numberOfGlyphs, flags, glyphIndex);
+    //Serial.printf("dx: %3d, dy: %3d\n", this->glyphTransformation.dx, this->glyphTransformation.dy);
+    //Serial.printf("Scaling: %d\n", this->glyphTransformation.enableScale);
+
+    offset = file.position();
+
+    uint32_t glyphOffset = this->getGlyphOffset(glyphIndex);
+    file.seek(glyphOffset);
+    glyph.numberOfContours += this->getInt16t();
+    file.seek(glyphOffset + 10);
+
+    if(numberOfGlyphs == 0){
+      this->readSimpleGlyph();
+    }else{
+      this->readSimpleGlyph(1);
+    }
+    file.seek(offset);
+
+    numberOfGlyphs++;
+    this->glyphTransformation = {0,0,0,1,1}; //init
+  }while(flags & 0b00000100000);
 
   return 1;
 }
@@ -503,14 +572,16 @@ uint8_t truetypeClass::readGlyph(uint16_t _code, uint8_t _justSize) {
   glyph.xMax = this->getInt16t();
   glyph.yMax = this->getInt16t();
 
+  this->glyphTransformation = {0,0,0,1,1}; //init
+
   if(_justSize){
     return 0;
   }
 
   if (glyph.numberOfContours >= 0) {
-    this->readSimpleGlyph();
-
-    return 1;
+    return this->readSimpleGlyph();
+  }else{
+    return this->readCompoundGlyph();
   }
   return 0;
 }
@@ -519,6 +590,7 @@ uint8_t truetypeClass::readGlyph(uint16_t _code, uint8_t _justSize) {
 void truetypeClass::freeGlyph() {
   free(glyph.points);
   free(glyph.endPtsOfContours);
+  glyph.numberOfPoints = 0;
 }
 
 //generate Bitmap
@@ -647,7 +719,7 @@ void truetypeClass::generateOutline(int16_t _x, int16_t _y, uint16_t _width) {
     //Serial.println(this->numPoints);
     this->addEndPoint(this->numPoints - 1);
     this->addBeginPoint(this->numPoints);
-    //Serial.println("---Contour---");
+    //Serial.println("---Contour end---");
   }
   return;
 }
@@ -749,19 +821,19 @@ void truetypeClass::textDraw(int16_t _x, int16_t _y, const wchar_t _character[])
     }
     //Serial.printf("%c\n", _character[c]);
 
-    uint16_t code = this->codeToGlyphId(_character[c]);
-    //Serial.printf("code:%4d\n", code);
-    this->readGlyph(code);
+    this->charCode = this->codeToGlyphId(_character[c]);
+    //Serial.printf("code:%4d\n", this->charCode);
+    this->readGlyph(this->charCode);
     //Serial.println(glyph.numberOfContours);
 
     _x += this->characterSpace;
     if(prev_code != 0 && this->kerningOn){
-      int16_t kern = this->getKerning(prev_code, code); //space between charctor
+      int16_t kern = this->getKerning(prev_code, this->charCode); //space between charctor
       _x += (kern * (int16_t)this->characterSize) / (this->yMax - this->yMin);
     }
-    prev_code = code;
+    prev_code = this->charCode;
 
-    ttHMetric_t hMetric = getHMetric(code);
+    ttHMetric_t hMetric = getHMetric(this->charCode);
     uint16_t width = this->characterSize * (glyph.xMax - glyph.xMin) / (this->yMax - this->yMin);
 
     //Line breaks when reaching the edge of the display
@@ -789,9 +861,9 @@ void truetypeClass::textDraw(int16_t _x, int16_t _y, const wchar_t _character[])
           }
         }
       }
-      this->freePointsAll();
-      this->freeGlyph();
     }
+    this->freePointsAll();
+    this->freeGlyph();
 
     //Serial.println("---done");
     _x += (hMetric.advanceWidth) ? (hMetric.advanceWidth) : (width);
@@ -813,12 +885,15 @@ void truetypeClass::textDraw(int16_t _x, int16_t _y, const String _string){
 void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
   //Serial.printf("addPix(%3d, %3d)\n", _x, _y);
   uint8_t *buf_ptr;
-// limit to boundary co-ordinates the boundary is always in the same orientation as the string not the buffer
-  if (( _x < this->start_x )||(_x >= this->end_x) || (_y >= this->end_y))
+
+  //limit to boundary co-ordinates the boundary is always in the same orientation as the string not the buffer
+  if ((_x < this->start_x) || (_x >= this->end_x) || (_y >= this->end_y)){
     return;
-  //Rotate co-ordinates relative to the buffer 
+  }
+
+  //Rotate co-ordinates relative to the buffer
   uint16_t temp = _x;
- switch(this->stringRotation){
+  switch(this->stringRotation){
     case ROTATE_270:
       _x = _y;
       _y = this->displayHeight - 1 - temp;
@@ -835,11 +910,12 @@ void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
     default:
       break;
   }
-  
+
   //out of range
-  if(( _x < 0 )||((uint16_t)_x >= this->displayWidth) || ((uint16_t)_y >= this->displayHeight)|| ( _y < 0 )){
+  if((_x < 0) || ((uint16_t)_x >= this->displayWidth) || ((uint16_t)_y >= this->displayHeight) || (_y < 0)){
     return;
   }
+
   if(this->framebufferDirection){
     //Framebuffer bit direction: Vertical
   }else{
