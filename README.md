@@ -46,7 +46,7 @@ void setup() {
   truetype.setTextColor(0x00, 0x00);
 
   //Write a string to the framebuffer
-  truetype.textDraw(10, 10, L"The quick brown fox jumps over the lazy dog");
+  truetype.textDraw(10, 10, "The quick brown fox jumps over the lazy dog");
 
   //Export framebuffer to screen
   FLASH_TO_SCREEN();
@@ -112,7 +112,6 @@ void setup() {
   - uint16_t _x : String start point x.  
   - uint16_t _y : String start point y.  
   - const char _character[] : String pointer (single-byte character).  
-  - Under construction  
 
 - void textDraw(uint16_t _x, uint16_t _y, const String _string);  
   - Write a string to the framebuffer.  
@@ -129,7 +128,6 @@ void setup() {
   - const char _character[] : String pointer (single-byte character).  
   - Return : The length of the string. Automatic line breaks are not considered.
     - Can be used for text align center/right.  
-  - Under construction  
 
 - uint16_t getStringWidth(const String _string);
   - const String _string : String pointer (String type).  
