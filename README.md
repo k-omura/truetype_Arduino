@@ -3,6 +3,7 @@ Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.
 
 - Read TrueType files ('cmap' format4).  
 - Write any string to the user's framebuffer.  
+- Supports "Simple glyphs" and part of "Compound glyphs".
 - Set font size, position, color, spacing, Rotate.  
 - Centered and right aligned strings. By getting the length of the string.  
 - Read the 'kern' table (format0) and kerning.  
@@ -27,7 +28,6 @@ void setup() {
   //I think that SD, FATFS and other codes will be almost the same
   SPIFFS.begin(true);
   File fontFile = SPIFFS.open("/FONTFILE.ttf", "r");
-
 
   //Set framebuffer array in TrueType class
   //Pay attention to the format of the framebuffer
@@ -83,6 +83,7 @@ void setup() {
 
 - void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
   - Setting the string range.  
+    - Coordinate axes rotate with "setTextRotation"  
   - uint16_t _start_x : The starting point x of the character string when a line break occurs.  
   - uint16_t _end_x : The final point x when breaking a line.  
   - uint16_t _end_y : The final point y when breaking a line.  
@@ -161,7 +162,7 @@ Example with 1bit / 1pixel
 
 # Future work  
 ## TrueType  
-- Support for "Compound glyphs"  
+- Full support for "Compound glyphs"  
 - Diversification of supported framebuffer formats.  
 - Only support for 'cmap' format 4 and 'kern' format0 is supported.  
 - Correction that some files can not be read.  
