@@ -845,6 +845,16 @@ void truetypeClass::textDraw(int16_t _x, int16_t _y, const wchar_t _character[])
       }
     }
 
+    //Line breaks with line feed code
+    if(_character[c] == '\n'){
+      _x = this->start_x;
+      _y += this->characterSize;
+      if(_y > this->end_y){
+        break;
+      }
+      continue;
+    }
+
     //Not compatible with Compound glyphs now
     if(glyph.numberOfContours >= 0){
       //write framebuffer
@@ -872,14 +882,22 @@ void truetypeClass::textDraw(int16_t _x, int16_t _y, const wchar_t _character[])
 }
 
 void truetypeClass::textDraw(int16_t _x, int16_t _y, const char _character[]){
-  this->textDraw(_x, _y, (wchar_t*)_character);
+  uint16_t length = 0;
+  while(_character[length] != '\0'){
+    length++;
+  }
+  wchar_t *wcharacter = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
+  for(uint16_t i = 0; i < length; i++){
+    wcharacter[i] = _character[i];
+  }
+  this->textDraw(_x, _y, wcharacter);
 }
 
 void truetypeClass::textDraw(int16_t _x, int16_t _y, const String _string){
   uint16_t length = _string.length();
-  wchar_t *character = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
-  this->stringToWchar(_string, character);
-  this->textDraw(_x, _y, character);
+  wchar_t *wcharacter = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
+  this->stringToWchar(_string, wcharacter);
+  this->textDraw(_x, _y, wcharacter);
 }
 
 void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
@@ -985,14 +1003,22 @@ uint16_t truetypeClass::getStringWidth(const wchar_t _character[]){
 }
 
 uint16_t truetypeClass::getStringWidth(const char _character[]){
-  return this->getStringWidth((wchar_t*)_character);
+  uint16_t length = 0;
+  while(_character[length] != '\0'){
+    length++;
+  }
+  wchar_t *wcharacter = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
+  for(uint16_t i = 0; i < length; i++){
+    wcharacter[i] = _character[i];
+  }
+  return this->getStringWidth(wcharacter);
 }
 
 uint16_t truetypeClass::getStringWidth(const String _string){
   uint16_t length = _string.length();
-  wchar_t *character = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
-  this->stringToWchar(_string, character);
-  return this->getStringWidth(character);
+  wchar_t *wcharacter = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
+  this->stringToWchar(_string, wcharacter);
+  return this->getStringWidth(wcharacter);
 }
 
 /* Points*/
