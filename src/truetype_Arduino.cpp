@@ -284,7 +284,6 @@ uint16_t truetypeClass::codeToGlyphId(uint16_t _code) {
 /* read kerning table */
 uint8_t truetypeClass::readKern(){
   uint32_t nextTable;
-  uint8_t foundMap = 0;
 
   if (this->seekToTable("kern") == 0) {
     //Serial.println("kern not found");
@@ -299,8 +298,7 @@ uint8_t truetypeClass::readKern(){
   }
 
   for (uint8_t i = 0; i < kernHeader.nTables; i++) {
-    uint32_t length;
-    uint16_t coverage, tupleIndex, format, nPairs;
+    uint16_t format;
 
     kernSubtable.length = this->getUInt32t();
     nextTable = file.position() + kernSubtable.length;
@@ -600,7 +598,6 @@ void truetypeClass::generateOutline(int16_t _x, int16_t _y, uint16_t _width) {
   this->numBeginPoints = 0;
   this->numEndPoints = 0;
 
-  uint8_t pointsOfCurve[5] = {0};
   int16_t x0, y0, x1, y1;
 
   uint16_t j = 0;
@@ -786,14 +783,14 @@ bool truetypeClass::isInside(int16_t _x, int16_t _y) {
 
     if (point1.y <= point.y) {
       if (point2.y > point.y) {
-        if (this->isLeft(point1, point2, point) > 0) {
+        if (this->isLeft(&point1, &point2, &point) > 0) {
           windingNumber++;
         }
       }
     } else {
       // start y > point.y (no test needed)
       if (point2.y <= point.y) {
-        if (this->isLeft(point1, point2, point) < 0) {
+        if (this->isLeft(&point1, &point2, &point) < 0) {
           windingNumber--;
         }
       }
@@ -803,8 +800,82 @@ bool truetypeClass::isInside(int16_t _x, int16_t _y) {
   return (windingNumber != 0);
 }
 
-int truetypeClass::isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate_t &_point) {
-  return ((_p1.x - _p0.x) * (_point.y - _p0.y) - (_point.x - _p0.x) * (_p1.y - _p0.y));
+void truetypeClass::fillGlyph(uint16_t _x_min, uint16_t _y_min, uint16_t _width){
+	for(uint16_t y = _y_min; y < (_y_min + this->characterSize); y++){
+		ttCoordinate_t point1, point2;
+		ttCoordinate_t point;
+		point.y = y;
+
+		uint16_t intersectPointsNum = 0;
+		uint16_t bpCounter = 0;
+		uint16_t epCounter = 0;
+    uint16_t p2Num = 0;
+
+		for (uint16_t i = 0; i < numPoints; i++) {
+			point1 = this->points[i];
+			// Wrap?
+			if (i == endPoints[epCounter]) {
+        p2Num = beginPoints[bpCounter];
+				epCounter++;
+				bpCounter++;
+			} else {
+				p2Num = i + 1;
+			}
+      point2 = this->points[p2Num];
+
+			if (point1.y <= y) {
+				if (point2.y > y) {
+					//Have a valid up intersect
+					intersectPointsNum++;
+					pointsToFill = (ttWindIntersect_t *)realloc(pointsToFill, sizeof(ttWindIntersect_t) * intersectPointsNum);
+					pointsToFill[intersectPointsNum - 1].p1 = i;
+          pointsToFill[intersectPointsNum - 1].p2 = p2Num;
+					pointsToFill[intersectPointsNum - 1].up = 1;
+				}
+			} else {
+				// start y > point.y (no test needed)
+				if (point2.y <= y) {
+					//Have a valid down intersect
+					intersectPointsNum++;
+					pointsToFill = (ttWindIntersect_t *)realloc(pointsToFill, sizeof(ttWindIntersect_t) * intersectPointsNum);
+					pointsToFill[intersectPointsNum - 1].p1 = i;
+          pointsToFill[intersectPointsNum - 1].p2 = p2Num;
+					pointsToFill[intersectPointsNum - 1].up = 0;
+				}
+			}
+		}
+
+		for(uint16_t x = _x_min; x < (_x_min + _width); x++){
+		  int16_t windingNumber = 0;
+			point.x = x;
+
+			for (uint16_t i = 0; i < intersectPointsNum; i++) {
+				point1 = this->points[pointsToFill[i].p1];
+				point2 = this->points[pointsToFill[i].p2];
+
+				if(pointsToFill[i].up == 1){
+					if (isLeft(&point1, &point2, &point) > 0) {
+						windingNumber++;
+					}
+				}else{
+					if (isLeft(&point1, &point2, &point) < 0) {
+						windingNumber--;
+          }
+				}
+			}
+
+			if(windingNumber != 0){
+        this->addPixel(x, y, this->colorInside);
+			}
+		}
+
+		free(pointsToFill);
+    pointsToFill = NULL;
+	}
+}
+
+int32_t truetypeClass::isLeft(ttCoordinate_t *_p0, ttCoordinate_t *_p1, ttCoordinate_t *_point) {
+  return ((_p1->x - _p0->x) * (_point->y - _p0->y) - (_point->x - _p0->x) * (_p1->y - _p0->y));
 }
 
 void truetypeClass::textDraw(int16_t _x, int16_t _y, const wchar_t _character[]){
@@ -861,16 +932,7 @@ void truetypeClass::textDraw(int16_t _x, int16_t _y, const wchar_t _character[])
       this->generateOutline(hMetric.leftSideBearing + _x, _y, width);
 
       //fill charctor
-      for (uint16_t pixel_y = 0; pixel_y < this->characterSize; pixel_y++) {
-        for (uint16_t pixel_x = 0; pixel_x < width; pixel_x++) {
-          //want to fill faster...
-          if (this->isInside(hMetric.leftSideBearing + _x + pixel_x, _y + pixel_y)) {
-            this->addPixel(hMetric.leftSideBearing + _x + pixel_x, _y + pixel_y, this->colorInside);
-          }else{
-            //out of char.
-          }
-        }
-      }
+      this->fillGlyph(hMetric.leftSideBearing + _x, _y, width);
     }
     this->freePointsAll();
     this->freeGlyph();
