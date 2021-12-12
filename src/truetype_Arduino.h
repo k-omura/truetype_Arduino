@@ -139,6 +139,12 @@ typedef struct {
   int16_t leftSideBearing;
 } ttHMetric_t;
 
+typedef struct {
+	uint16_t p1;
+	uint16_t p2;
+	uint8_t up;
+} ttWindIntersect_t;
+
 class truetypeClass {
   public:
     truetypeClass();
@@ -227,9 +233,11 @@ class truetypeClass {
 
     //glyf
     ttGlyph_t glyph;
+	  ttWindIntersect_t *pointsToFill;
     void generateOutline(int16_t _x, int16_t _y, uint16_t _width);
     void freePointsAll();
     bool isInside(int16_t _x, int16_t _y);
+    void fillGlyph(uint16_t _x_min, uint16_t _y_min, uint16_t _width);
     uint8_t readGlyph(uint16_t code, uint8_t _justSize = 0);
     void freeGlyph();
 
@@ -240,7 +248,7 @@ class truetypeClass {
     void freeBeginPoints();
     void addEndPoint(uint16_t _ep);
     void freeEndPoints();
-    int isLeft(ttCoordinate_t &_p0, ttCoordinate_t &_p1, ttCoordinate_t &_point);
+    int32_t isLeft(ttCoordinate_t *_p0, ttCoordinate_t *_p1, ttCoordinate_t *_point);
 
     //write user framebuffer
     uint16_t characterSize = 20;
