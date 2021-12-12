@@ -156,7 +156,8 @@ Example with 1bit / 1pixel
 - Outline color and the fill color can be set individually.  
 - Supports writing to arrays. Fonts are drawn in some form of framebuffer(uint8_t array).  
 - Kerning by reading the 'kern' table.  
-- Read 'hmtx' table and adjust layout  
+- Read 'hmtx' table and adjust layout.  
+- Efficient filling process.  
 
 # Future work  
 ## TrueType  
@@ -165,7 +166,7 @@ Example with 1bit / 1pixel
 - Only support for 'cmap' format 4 and 'kern' format0 is supported.  
 - Correction that some files can not be read.  
 - Unable to read ttf file if file name is long(STM32F103).  
-- Faster glyph reading and write framebuffer.  
+- Faster glyph reading.  
 - Decrease usage of SRAM.  
 - Handling of Bezier curve(When exceeding 3 dimensions. Currently, provisional processing).  
 ## Draw framebuffer  
