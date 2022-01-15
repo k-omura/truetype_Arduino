@@ -13,6 +13,8 @@ Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
 
+The native library for STM32 is [here](https://github.com/k-omura/STM32_UIKit).  
+
 # Standard code  
 ```
 //TrueType class declaration
