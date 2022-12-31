@@ -1,3 +1,7 @@
+### 修复原版ascii符号会导致系统崩溃的问题
+### 修复原版内存泄漏问题
+### 添加与GXEPD2联动的例程，适用于墨水屏和esp8266
+
 # Display truetype font for Arduino  
 Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.  
 
