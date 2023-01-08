@@ -2,7 +2,7 @@
 ### 修复原版内存泄漏问题
 ### 添加与GXEPD2联动的例程，适用于墨水屏和esp8266
 ### 目前已知BUG，部分字体无法正常显示，部分字体会导致系统崩溃
-### 目前测试成功的中文字体有造字工房系列、方正兰亭细黑、苹方黑体等
+### 目前测试成功的中文字体有造字工房系列、方正兰亭细黑、苹方黑体
 # Display truetype font for Arduino  
 Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.  
 
