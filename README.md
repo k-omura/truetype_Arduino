@@ -1,3 +1,6 @@
+
+<img src="https://github.com/jie326513988/truetype_Arduino/blob/master/1.jpeg" width="500">
+
 ### 修复原版ascii符号会导致系统崩溃的问题
 ### 修复原版内存泄漏问题
 ### 添加与GXEPD2联动的例程，适用于墨水屏和esp8266
@@ -14,7 +17,7 @@ Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.
 - Read the 'kern' table (format0) and kerning.  
 - Beautifully arrange characters based on the 'hmtx' table.  
 <img src="https://user-images.githubusercontent.com/26690530/116971484-99f68600-acf4-11eb-99c6-d5e29791b53f.JPG" width="500">
-
+https://github.com/jie326513988/truetype_Arduino/blob/master/1.jpeg
 TrueType™ Reference Manual  
 https://developer.apple.com/fonts/TrueType-Reference-Manual/  
 
