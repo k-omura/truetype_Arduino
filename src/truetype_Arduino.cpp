@@ -15,10 +15,16 @@ truetypeClass::truetypeClass() {}
 
 void truetypeClass::end() {
   file.close();
+  this->freePointsAll();
+  this->freeGlyph();
 }
 
 /* initialize */
 uint8_t truetypeClass::setTtfFile(File _file, uint8_t _checkCheckSum){
+  if (_file==0) {
+    return 0;
+  }
+
   this->file = _file;
   if (this->readTableDirectory(_checkCheckSum) == 0) {
     file.close();
@@ -953,6 +959,7 @@ void truetypeClass::textDraw(int16_t _x, int16_t _y, const char _character[]){
     wcharacter[i] = _character[i];
   }
   this->textDraw(_x, _y, wcharacter);
+  free(wcharacter);
 }
 
 void truetypeClass::textDraw(int16_t _x, int16_t _y, const String _string){
@@ -960,6 +967,7 @@ void truetypeClass::textDraw(int16_t _x, int16_t _y, const String _string){
   wchar_t *wcharacter = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
   this->stringToWchar(_string, wcharacter);
   this->textDraw(_x, _y, wcharacter);
+  free(wcharacter);
 }
 
 void truetypeClass::addPixel(int16_t _x, int16_t _y, uint8_t _colorCode) {
@@ -1066,6 +1074,7 @@ uint16_t truetypeClass::getStringWidth(const wchar_t _character[]){
 
 uint16_t truetypeClass::getStringWidth(const char _character[]){
   uint16_t length = 0;
+  uint16_t output = 0;
   while(_character[length] != '\0'){
     length++;
   }
@@ -1073,14 +1082,19 @@ uint16_t truetypeClass::getStringWidth(const char _character[]){
   for(uint16_t i = 0; i < length; i++){
     wcharacter[i] = _character[i];
   }
-  return this->getStringWidth(wcharacter);
+  output = this->getStringWidth(wcharacter);
+  return output;
 }
 
 uint16_t truetypeClass::getStringWidth(const String _string){
   uint16_t length = _string.length();
+  uint16_t output = 0;
+
   wchar_t *wcharacter = (wchar_t *)calloc(sizeof(wchar_t), length + 1);
   this->stringToWchar(_string, wcharacter);
-  return this->getStringWidth(wcharacter);
+
+  output = this->getStringWidth(wcharacter);
+  return output;
 }
 
 /* Points*/
