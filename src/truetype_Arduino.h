@@ -78,9 +78,9 @@ typedef struct {
 typedef struct {
   int16_t dx;
   int16_t dy;
-  uint8_t enableScale;
-  uint16_t scale_x;
-  uint16_t scale_y;
+  uint8_t enableScale; // 启用缩放
+  uint16_t scale_x;    // 缩放X
+  uint16_t scale_y;    // 缩放Y
 } ttGlyphTransformation_t;
 
 /* currently only support format4 cmap tables */
@@ -95,20 +95,24 @@ typedef struct {
   uint16_t offset;
 } ttCmapEncoding_t;
 
-typedef struct {
-  uint16_t format;
-  uint16_t length;
-  uint16_t language;
-  uint16_t segCountX2;
-  uint16_t searchRange;
-  uint16_t entrySelector;
-  uint16_t rangeShift;
-  uint32_t offset;
-  uint32_t endCodeOffset;
-  uint32_t startCodeOffset;
-  uint32_t idDeltaOffset;
-  uint32_t idRangeOffsetOffset;
-  uint32_t glyphIndexArrayOffset;
+typedef struct
+{
+  uint16_t format;   // 子表格式,固定值为4
+  uint16_t length;   // 子表长度
+  uint16_t language; // 语言码
+
+  uint16_t segCountX2;    // 2 x 查找段数
+  uint16_t searchRange;   // 2^(floor(log2(segCount))) * 2
+  uint16_t entrySelector; // log2(searchRange/2)
+  uint16_t rangeShift;    // segCountX2 - searchRange
+
+  uint32_t offset; // 子表偏移量
+
+  uint32_t endCodeOffset;         // 终止码偏移
+  uint32_t startCodeOffset;       // 起始码偏移
+  uint32_t idDeltaOffset;         // ID增量偏移
+  uint32_t idRangeOffsetOffset;   // ID范围偏移量偏移
+  uint32_t glyphIndexArrayOffset; // 字形索引数组偏移
 } ttCmapFormat4_t;
 
 /* currently only support format0 kerning tables */
@@ -158,6 +162,7 @@ class truetypeClass {
 #define setTextColour setTextColor //to satisfy a pedantic old Australian
     void setTextRotation(uint16_t _rotation);
 
+    uint16_t getLastWidth(); //获取上一次的字符宽度
     uint16_t getStringWidth(const wchar_t _character[]);
     uint16_t getStringWidth(const char _character[]);
     uint16_t getStringWidth(const String _string);
@@ -204,14 +209,17 @@ class truetypeClass {
     uint8_t readCompoundGlyph();
 
     //cmap. maps character codes to glyph indices
+    // cmap. 将字符代码映射到图示符索引
     ttCmapIndex_t cmapIndex;
     ttCmapEncoding_t *cmapEncoding;
     ttCmapFormat4_t cmapFormat4;
     uint8_t readCmapFormat4();
     uint8_t readCmap();
 
-    //hmtx. metric information for the horizontal layout each of the glyphs
-    uint32_t hmtxTablePos = 0;
+    //hmtx. 每个字形的水平布局的度量信息
+    uint32_t hmtxTablePos = 0;    // 初始地址
+    uint16_t advanceWidthMax = 0; // 水平宽度最大值，由特殊的字形 index 0得出
+    uint16_t lastWidth = 0;       // 上一次的宽度
     uint8_t readHMetric();
     ttHMetric_t getHMetric(uint16_t _code);
 
@@ -223,7 +231,7 @@ class truetypeClass {
     uint8_t readKern();
     int16_t getKerning(uint16_t _left_glyph, uint16_t _right_glyph);
 
-    //generate points
+    //生成点
     ttCoordinate_t *points;
     uint16_t numPoints;
     uint16_t *beginPoints;
@@ -237,7 +245,7 @@ class truetypeClass {
     void generateOutline(int16_t _x, int16_t _y, uint16_t _width);
     void freePointsAll();
     bool isInside(int16_t _x, int16_t _y);
-    void fillGlyph(uint16_t _x_min, uint16_t _y_min, uint16_t _width);
+    void fillGlyph(int16_t _x_min, int16_t _y_min, int16_t _width);
     uint8_t readGlyph(uint16_t code, uint8_t _justSize = 0);
     void freeGlyph();
 
