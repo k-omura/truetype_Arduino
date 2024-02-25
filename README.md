@@ -10,7 +10,8 @@
   * 对leftSideBearing和glyph.xMin进行判断，以便能以正常的数值进行后续计算（从hmet表获取的leftSideBearing异常时）
 * 修复检测到换行符无法换行的BUG
 * 添加一个获取字符宽度的函数，就是在textDraw()中获取_x值，可以少计算一次宽度。
-  
+<img src="https://github.com/jie326513988/truetype_Arduino/blob/master/20240225-1.jpg" width="500">
+
 #### 旧的消息
 * ~修复原版ascii符号会导致系统崩溃的问题~
 * 修复原版内存泄漏问题
