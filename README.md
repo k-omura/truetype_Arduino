@@ -1,11 +1,21 @@
 
 <img src="https://github.com/jie326513988/truetype_Arduino/blob/master/1.jpeg" width="500">
 
-### 修复原版ascii符号会导致系统崩溃的问题
-### 修复原版内存泄漏问题
-### 添加与GXEPD2联动的例程，适用于墨水屏和esp8266
-### 目前已知BUG，部分字体无法正常显示，部分字体会导致系统崩溃
-### 目前测试成功的中文字体有造字工房系列、方正兰亭细黑、苹方黑体
+
+### 2024-02-25
+* 修复修复大部分字体标点符号异常，字符显示空白和位置异常的BUG，
+  * fillGlyph()传入负值会导致系统崩溃
+  * 以空格字符的2倍advanceWidth作为advanceWidthMAX值（从hmet表获取的advanceWidth异常时）
+  * advanceWidth值异常时使用advanceWidthMAX值
+  * 对leftSideBearing和glyph.xMin进行判断，以便能以正常的数值进行后续计算（从hmet表获取的leftSideBearing异常时）
+* 修复检测到换行符无法换行的BUG
+* 添加一个获取字符宽度的函数，就是在textDraw()中获取_x值，可以少计算一次宽度。
+  
+#### 旧的消息
+* ~修复原版ascii符号会导致系统崩溃的问题~
+* 修复原版内存泄漏问题
+* 添加与GXEPD2联动的例程，适用于库支持的墨水屏和esp8266&esp32
+* ~目前已知BUG，部分字体无法正常显示，部分字体会导致系统崩溃~
 # Display truetype font for Arduino  
 Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.  
 
