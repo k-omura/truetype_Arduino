@@ -1,6 +1,6 @@
 
 <img src="https://github.com/jie326513988/truetype_Arduino/blob/master/1.jpeg" width="500">
-
+[观看视频](www.bilibili.com/video/BV1dx421Z7rG)
 
 ### 2024-02-25
 * 修复修复大部分字体标点符号异常，字符显示空白和位置异常的BUG，
