@@ -3,11 +3,17 @@ Read truetype(.ttf) from FS(ex. SD/SPIFFS/FATFS) and write framebuffer.
 
 - Read TrueType files ('cmap' format4).  
 - Write any string to the user's framebuffer.  
-- Supports "Simple glyphs" and part of "Compound glyphs".
+- Supports Microsoft Unicode BMP `cmap` format 4.
+- Supports simple glyphs and compound glyph transforms, including point attachment.
+- Uses `hhea`/`hmtx` metrics and `head.unitsPerEm` for glyph layout.
+- Supports legacy horizontal `kern` format 0 tables.
 - Set font size, position, color, spacing, Rotate.  
 - Centered and right aligned strings. By getting the length of the string.  
 - Read the 'kern' table (format0) and kerning.  
 - Beautifully arrange characters based on the 'hmtx' table.  
+- Renders TrueType quadratic outlines, including implied on-curve points between consecutive off-curve points.
+- Writes 1-, 4-, or 8-bit horizontal framebuffer formats; 8-bit RGB332 framebuffers use coverage blending for filled glyphs.
+- Supports character size, position, colors, spacing, rotation, and width measurement for alignment.
 <img src="https://user-images.githubusercontent.com/26690530/116971484-99f68600-acf4-11eb-99c6-d5e29791b53f.JPG" width="500">
 
 TrueType™ Reference Manual  
@@ -64,13 +70,18 @@ void setup() {
   - File _file : ttf file.  
   - Return : 1 = read successful, 0 = read failure.  
 
+- `setIntegratedTtf()` (optional)
+  - Enable `ENABLE_INTEGRATED_TTF` for every compilation unit, either with a project-wide build flag or by uncommenting the definition in [src/truetype_Arduino.h](src/truetype_Arduino.h).
+  - Replace the placeholder in [src/integrated_ttf.cpp](src/integrated_ttf.cpp) with a TrueType byte array and set `integrated_ttf_size` to its byte length.
+  - The included placeholder has size zero, so the API safely returns `0` until font data is supplied.
+
 - void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer);  
   - Framebuffer settings.
   - uint16_t _framebufferWidth : Framebuffer width.  
-  - uint16_t _framebufferHeight : Framebuffer eight.
-  - uint16_t _framebuffer_bit : The number of bits per pixel. (1,4,8bit implemented)
+  - uint16_t _framebufferHeight : Framebuffer height.
+  - uint16_t _framebuffer_bit : The number of bits per pixel. Horizontal 1-, 4-, and 8-bit framebuffers are implemented.
   - uint8_t _framebufferDirection : Bit orientation.
-    - [See Framebuffer format](#Framebuffer-format)  
+    - Set to `0` for the supported horizontal format. Vertical packing (`1`) is not implemented.
   - uint8_t *_framebuffer : Framebuffer pointer.  
   - If you want it to correspond to your own framebuffer, edit the addPixel function. If you add code, please share it!
 
@@ -90,10 +101,11 @@ void setup() {
   - uint16_t _end_x : The final point x when breaking a line.  
   - uint16_t _end_y : The final point y when breaking a line.  
 
-- void setTextColor(uint8_t _onLine, uint8_t _inside);  
+- void setTextColor(uint8_t _onLine, uint8_t _inside, uint8_t _fill = 1);
   - Text color setting.  
   - uint8_t _onLine : Character outline color.  
   - uint8_t _inside : Text fill color.  
+  - uint8_t _fill : `1` fills the glyph interior; `0` draws only the outline. Existing two-argument calls fill by default.
 
 - void setTextRotation(uint8_t _rotation);
   - Text rotation
@@ -103,22 +115,22 @@ void setup() {
   - uint8_t _rotation : rotation angle.
     - (ROTATE_0/ROTATE_90/ROTATE_180/ROTATE_270)  
 
-- void textDraw(uint16_t _x, uint16_t _y, const wchar_t _character[]);  
+- void textDraw(int16_t _x, int16_t _y, const wchar_t _character[]);
   - Write a string to the framebuffer.  
-  - uint16_t _x : String start point x.  
-  - uint16_t _y : String start point y.  
+  - int16_t _x : String start point x.
+  - int16_t _y : String start point y.
   - const wchar_t _character[] : String pointer (double-byte character).  
 
-- void textDraw(uint16_t _x, uint16_t _y, const char _character[]);  
+- void textDraw(int16_t _x, int16_t _y, const char _character[]);
   - Write a string to the framebuffer.  
-  - uint16_t _x : String start point x.  
-  - uint16_t _y : String start point y.  
+  - int16_t _x : String start point x.
+  - int16_t _y : String start point y.
   - const char _character[] : String pointer (single-byte character).  
 
-- void textDraw(uint16_t _x, uint16_t _y, const String _string);  
+- void textDraw(int16_t _x, int16_t _y, const String _string);
   - Write a string to the framebuffer.  
-  - uint16_t _x : String start point x.  
-  - uint16_t _y : String start point y.  
+  - int16_t _x : String start point x.
+  - int16_t _y : String start point y.
   - const String _string : String pointer (String type).  
 
 - uint16_t getStringWidth(const wchar_t _character[]);
@@ -137,12 +149,12 @@ void setup() {
     - Can be used for text align center/right.  
 
 - void end();  
-  - Close font file.  
+  - Close the external font file and release parser and renderer allocations.
 
 # Framebuffer format
 Bit orientation when storing information for multiple pixels per byte of the framebuffer.  
 The types of framebuffers are broadly divided according to this direction.  
-Currently supported: Horizontal - 1,4,8bit
+Currently supported: Horizontal - 1, 4, and 8 bit. Vertical packing is not implemented.
 ## Horizontal
 Example with 1bit / 1pixel  
 <img src="https://user-images.githubusercontent.com/26690530/117164679-cf3bca80-adff-11eb-9a5b-11b3093502dd.png" width="300">
@@ -160,10 +172,13 @@ Example with 1bit / 1pixel
 - Kerning by reading the 'kern' table.  
 - Read 'hmtx' table and adjust layout.  
 - Efficient filling process.  
+- Cached file reads reduce small, repeated `seek`/`read` operations.
+- TrueType quadratic curves and compound glyph transforms are handled without mutating source glyph points.
+- Scanline filling uses four vertical samples, 16.16 fixed-point outlines, and reusable work buffers.
+- Outline and fill colors can be set independently.
 
 # Future work  
 ## TrueType  
-- Full support for "Compound glyphs"  
 - Diversification of supported framebuffer formats.  
 - Only support for 'cmap' format 4 and 'kern' format0 is supported.  
 - Correction that some files can not be read.  
@@ -171,6 +186,7 @@ Example with 1bit / 1pixel
 - Faster glyph reading.  
 - Decrease usage of SRAM.  
 - Handling of Bezier curve(When exceeding 3 dimensions. Currently, provisional processing).  
+
 ## Draw framebuffer  
 - Text from the right
 - Underline  

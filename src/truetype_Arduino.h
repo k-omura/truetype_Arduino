@@ -31,26 +31,31 @@
 #define ROTATE_180 2
 #define ROTATE_270 3
 
-typedef struct {
+// Define this in a sketch or build flag after providing integrated_ttf.cpp data.
+// #define ENABLE_INTEGRATED_TTF
+
+typedef struct
+{
   char name[5];
   uint32_t checkSum;
   uint32_t offset;
   uint32_t length;
 } ttTable_t;
 
-typedef struct {
+typedef struct
+{
   uint32_t version;
   uint32_t revision;
   uint32_t checkSumAdjustment;
   uint32_t magicNumber;
   uint16_t flags;
   uint16_t unitsPerEm;
-  char     created[8];
-  char     modified[8];
-  int16_t  xMin;
-  int16_t  yMin;
-  int16_t  xMax;
-  int16_t  yMax;
+  char created[8];
+  char modified[8];
+  int16_t xMin;
+  int16_t yMin;
+  int16_t xMax;
+  int16_t yMax;
   uint16_t macStyle;
   uint16_t lowestRecPPEM;
   int16_t fontDirectionHint;
@@ -58,13 +63,15 @@ typedef struct {
   int16_t glyphDataFormat;
 } ttHeadttTable_t;
 
-typedef struct {
+typedef struct
+{
   uint8_t flag;
   int16_t x;
   int16_t y;
 } ttPoint_t;
 
-typedef struct {
+typedef struct
+{
   int16_t numberOfContours;
   int16_t xMin;
   int16_t yMin;
@@ -75,27 +82,25 @@ typedef struct {
   ttPoint_t *points;
 } ttGlyph_t;
 
-typedef struct {
+typedef struct
+{
   int16_t dx;
   int16_t dy;
-  uint8_t enableScale;
-  uint16_t scale_x;
-  uint16_t scale_y;
+  int32_t a;
+  int32_t b;
+  int32_t c;
+  int32_t d;
 } ttGlyphTransformation_t;
 
 /* currently only support format4 cmap tables */
-typedef struct {
+typedef struct
+{
   uint16_t version;
   uint16_t numberSubtables;
 } ttCmapIndex_t;
 
-typedef struct {
-  uint16_t platformId;
-  uint16_t platformSpecificId;
-  uint16_t offset;
-} ttCmapEncoding_t;
-
-typedef struct {
+typedef struct
+{
   uint16_t format;
   uint16_t length;
   uint16_t language;
@@ -111,164 +116,245 @@ typedef struct {
   uint32_t glyphIndexArrayOffset;
 } ttCmapFormat4_t;
 
+typedef struct
+{
+  uint16_t endCode;
+  uint16_t startCode;
+  int16_t idDelta;
+  uint16_t idRangeOffset;
+} ttCmapSegment_t;
+
 /* currently only support format0 kerning tables */
-typedef struct {
-  uint32_t version; //The version number of the kerning table (0x00010000 for the current version).
-  uint32_t nTables; //The number of subtables included in the kerning table.
+typedef struct
+{
+  uint16_t version;
+  uint16_t nTables;
 } ttKernHeader_t;
 
-typedef struct {
-  uint32_t length; //The length of this subtable in bytes, including this header.
-  uint16_t coverage; //Circumstances under which this table is used. See below for description.
+typedef struct
+{
+  uint16_t version;
+  uint16_t length;   // The length of this subtable in bytes, including this header.
+  uint16_t coverage; // Circumstances under which this table is used. See below for description.
 } ttKernSubtable_t;
 
-typedef struct {
-  uint16_t nPairs; //The number of kerning pairs in this subtable.
-  uint16_t searchRange; //The largest power of two less than or equal to the value of nPairs, multiplied by the size in bytes of an entry in the subtable.
-  uint16_t entrySelector; //This is calculated as log2 of the largest power of two less than or equal to the value of nPairs. This value indicates how many iterations of the search loop have to be made. For example, in a list of eight items, there would be three iterations of the loop.
-  uint16_t rangeShift; //The value of nPairs minus the largest power of two less than or equal to nPairs. This is multiplied by the size in bytes of an entry in the table.
+typedef struct
+{
+  uint16_t nPairs;        // The number of kerning pairs in this subtable.
+  uint16_t searchRange;   // The largest power of two less than or equal to the value of nPairs, multiplied by the size in bytes of an entry in the subtable.
+  uint16_t entrySelector; // This is calculated as log2 of the largest power of two less than or equal to the value of nPairs. This value indicates how many iterations of the search loop have to be made. For example, in a list of eight items, there would be three iterations of the loop.
+  uint16_t rangeShift;    // The value of nPairs minus the largest power of two less than or equal to nPairs. This is multiplied by the size in bytes of an entry in the table.
 } ttKernFormat0_t;
 
-typedef struct {
+typedef struct
+{
   int16_t x;
   int16_t y;
 } ttCoordinate_t;
 
-typedef struct {
+typedef struct
+{
+  int32_t x;
+  int32_t y;
+} ttPixelPoint_t;
+
+typedef struct
+{
   uint16_t advanceWidth;
   int16_t leftSideBearing;
 } ttHMetric_t;
 
-typedef struct {
-	uint16_t p1;
-	uint16_t p2;
-	uint8_t up;
-} ttWindIntersect_t;
+class truetypeClass
+{
+public:
+  truetypeClass();
 
-class truetypeClass {
-  public:
-    truetypeClass();
+  uint8_t setTtfFile(File _file, uint8_t _checkCheckSum = 0);
+#ifdef ENABLE_INTEGRATED_TTF
+  uint8_t setIntegratedTtf();
+#endif
+  void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer);
+  void setCharacterSpacing(int16_t _characterSpace, uint8_t _kerning = 1);
+  void setCharacterSize(uint16_t _characterSize);
+  void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
+  void setTextColor(uint8_t _onLine, uint8_t _inside, uint8_t _fill = 1);
+#define setTextColour setTextColor // to satisfy a pedantic old Australian
+  void setTextRotation(uint16_t _rotation);
 
-    uint8_t setTtfFile(File _file, uint8_t _checkCheckSum = 0);
-    void setFramebuffer(uint16_t _framebufferWidth, uint16_t _framebufferHeight, uint16_t _framebuffer_bit, uint8_t _framebufferDirection, uint8_t *_framebuffer);
-    void setCharacterSpacing(int16_t _characterSpace, uint8_t _kerning = 1);
-    void setCharacterSize(uint16_t _characterSize);
-    void setTextBoundary(uint16_t _start_x, uint16_t _end_x, uint16_t _end_y);
-    void setTextColor(uint8_t _onLine, uint8_t _inside);
-#define setTextColour setTextColor //to satisfy a pedantic old Australian
-    void setTextRotation(uint16_t _rotation);
+  uint16_t getStringWidth(const wchar_t _character[]);
+  uint16_t getStringWidth(const char _character[]);
+  uint16_t getStringWidth(const String _string);
 
-    uint16_t getStringWidth(const wchar_t _character[]);
-    uint16_t getStringWidth(const char _character[]);
-    uint16_t getStringWidth(const String _string);
+  void textDraw(int16_t _x, int16_t _y, const wchar_t _character[]);
+  void textDraw(int16_t _x, int16_t _y, const char _character[]);
+  void textDraw(int16_t _x, int16_t _y, const String _string);
 
-    void textDraw(int16_t _x, int16_t _y, const wchar_t _character[]);
-    void textDraw(int16_t _x, int16_t _y, const char _character[]);
-    void textDraw(int16_t _x, int16_t _y, const String _string);
+  void end();
 
-    void end();
+private:
+  File file;
+#ifdef ENABLE_INTEGRATED_TTF
+  bool useIntegratedTtf = false;
+#endif
 
-  private:
-    File file;
+  uint16_t charCode;
+  int16_t xMin, xMax, yMin, yMax;
 
-    uint16_t charCode;
-    int16_t xMin, xMax, yMin, yMax;
+  const int numTablesPos = 4;
+  const int tablePos = 12;
 
-    const int numTablesPos = 4;
-    const int tablePos = 12;
+  uint16_t numTables;
+  ttTable_t *table;
+  ttHeadttTable_t headTable;
+  int16_t fontAscender = 0;
+  int16_t fontDescender = 0;
+  uint32_t cmapTableEnd = 0;
+  ttCmapSegment_t *cmapSegments = NULL;
+  uint16_t cmapSegmentCapacity = 0;
 
-    uint16_t numTables;
-    ttTable_t *table;
-    ttHeadttTable_t headTable;
+  uint8_t getUInt8t();
+  int16_t getInt16t();
+  uint16_t getUInt16t();
+  uint32_t getUInt32t();
+  int16_t swap_int16(int16_t _val);
+  uint16_t swap_uint16(uint16_t _val);
+  uint32_t swap_uint32(uint32_t _val);
 
-    uint8_t getUInt8t();
-    int16_t getInt16t();
-    uint16_t getUInt16t();
-    uint32_t getUInt32t();
-    int16_t swap_int16(int16_t _val);
-    uint16_t swap_uint16(uint16_t _val);
-    uint32_t swap_uint32(uint32_t _val);
+  // basic
+  uint32_t calculateCheckSum(uint32_t offset, uint32_t length);
+  uint32_t seekToTable(const char *name);
+  int readTableDirectory(int checkCheckSum);
+  void readHeadTable();
+  void readCoords(char _xy, uint16_t _startPoint = 0);
 
-    //basic
-    uint32_t calculateCheckSum(uint32_t offset, uint32_t length);
-    uint32_t seekToTable(const char *name);
-    int readTableDirectory(int checkCheckSum);
-    void readHeadTable();
-    void readCoords(char _xy, uint16_t _startPoint = 0);
+  // Glyph
+  ttGlyphTransformation_t glyphTransformation;
+  uint32_t getGlyphOffset(uint16_t index);
+  uint16_t codeToGlyphId(uint16_t code);
+  uint8_t readSimpleGlyph(uint8_t _addGlyph = 0);
+  uint8_t readCompoundGlyph();
 
-    //Glyph
-    ttGlyphTransformation_t glyphTransformation;
-    uint32_t getGlyphOffset(uint16_t index);
-    uint16_t codeToGlyphId(uint16_t code);
-    uint8_t readSimpleGlyph(uint8_t _addGlyph = 0);
-    uint8_t readCompoundGlyph();
+  // cmap. maps character codes to glyph indices
+  ttCmapIndex_t cmapIndex;
+  ttCmapFormat4_t cmapFormat4;
+  uint8_t readCmapFormat4();
+  uint8_t readCmap();
 
-    //cmap. maps character codes to glyph indices
-    ttCmapIndex_t cmapIndex;
-    ttCmapEncoding_t *cmapEncoding;
-    ttCmapFormat4_t cmapFormat4;
-    uint8_t readCmapFormat4();
-    uint8_t readCmap();
+  // hmtx. metric information for the horizontal layout each of the glyphs
+  uint32_t hmtxTablePos = 0;
+  uint16_t numberOfHMetrics = 0;
+  uint32_t locaTableOffset = 0;
+  uint32_t glyfTableOffset = 0;
+  uint8_t readHMetric();
+  ttHMetric_t getHMetric(uint16_t _code);
 
-    //hmtx. metric information for the horizontal layout each of the glyphs
-    uint32_t hmtxTablePos = 0;
-    uint8_t readHMetric();
-    ttHMetric_t getHMetric(uint16_t _code);
+  // kerning.
+  ttKernHeader_t kernHeader;
+  ttKernSubtable_t kernSubtable;
+  ttKernFormat0_t kernFormat0;
+  uint32_t kernTablePos = 0;
+  uint8_t readKern();
+  int16_t getKerning(uint16_t _left_glyph, uint16_t _right_glyph);
 
-    //kerning.
-    ttKernHeader_t kernHeader;
-    ttKernSubtable_t kernSubtable;
-    ttKernFormat0_t kernFormat0;
-    uint32_t kernTablePos = 0;
-    uint8_t readKern();
-    int16_t getKerning(uint16_t _left_glyph, uint16_t _right_glyph);
+  // generate points
+  ttPixelPoint_t *points;
+  uint16_t numPoints;
+  uint16_t pointsCapacity = 0;
+  uint16_t *beginPoints;
+  uint16_t numBeginPoints;
+  uint16_t beginPointsCapacity = 0;
+  uint16_t *endPoints;
+  uint16_t numEndPoints;
+  uint16_t endPointsCapacity = 0;
 
-    //generate points
-    ttCoordinate_t *points;
-    uint16_t numPoints;
-    uint16_t *beginPoints;
-    uint16_t numBeginPoints;
-    uint16_t *endPoints;
-    uint16_t numEndPoints;
+  // glyf
+  ttGlyph_t glyph;
+  uint16_t glyphPointsCapacity = 0;
+  uint16_t glyphContoursCapacity = 0;
+  uint8_t compoundGlyphDepth = 0;
+  void generateOutline(int16_t _x, int16_t _y, uint16_t _width);
+  void freePointsAll();
+  void fillGlyph(int16_t _x_min, int16_t _y_min, uint16_t _width);
+  uint8_t readGlyph(uint16_t code, uint8_t _justSize = 0);
+  void freeGlyph();
 
-    //glyf
-    ttGlyph_t glyph;
-	  ttWindIntersect_t *pointsToFill;
-    void generateOutline(int16_t _x, int16_t _y, uint16_t _width);
-    void freePointsAll();
-    bool isInside(int16_t _x, int16_t _y);
-    void fillGlyph(uint16_t _x_min, uint16_t _y_min, uint16_t _width);
-    uint8_t readGlyph(uint16_t code, uint8_t _justSize = 0);
-    void freeGlyph();
+  void addLine(int16_t _x0, int16_t _y0, int16_t _x1, int16_t _y1);
+  void addPoint(int32_t _x, int32_t _y);
+  void freePoints();
+  void addBeginPoint(uint16_t _bp);
+  void freeBeginPoints();
+  void addEndPoint(uint16_t _ep);
+  void freeEndPoints();
 
-    void addLine(int16_t _x0, int16_t _y0, int16_t _x1, int16_t _y1);
-    void addPoint(int16_t _x, int16_t _y);
-    void freePoints();
-    void addBeginPoint(uint16_t _bp);
-    void freeBeginPoints();
-    void addEndPoint(uint16_t _ep);
-    void freeEndPoints();
-    int32_t isLeft(ttCoordinate_t *_p0, ttCoordinate_t *_p1, ttCoordinate_t *_point);
+  struct ttEdgeCross_t
+  {
+    int32_t x;
+    int32_t step;
+    int32_t startY;
+    int32_t endY;
+    int8_t dir;
+  };
+  struct ttQuadraticSegment_t
+  {
+    ttCoordinate_t p0;
+    ttCoordinate_t control;
+    ttCoordinate_t p1;
+    uint8_t depth;
+  };
+  ttEdgeCross_t *edgeCrosses = NULL;
+  uint16_t *edgeOrder = NULL;
+  uint16_t edgeCrossesCapacity = 0;
+  uint8_t *fillCoverage = NULL;
+  uint16_t fillCoverageCapacity = 0;
+  int32_t outlineScaleX = 0;
+  int32_t outlineScaleY = 0;
+  int32_t outlineOriginX = 0;
+  int32_t outlineOriginY = 0;
+  void emitLine(ttCoordinate_t _p0, ttCoordinate_t _p1);
+  void emitQuadratic(ttCoordinate_t _p0, ttCoordinate_t _control, ttCoordinate_t _p1);
+  void addLineFixed(int32_t _x0, int32_t _y0, int32_t _x1, int32_t _y1);
+  void accumulateSpan(int32_t _start, int32_t _end, int32_t _xMin, int32_t _xMax, uint8_t *_coverage);
+  void commitCoverage(int16_t _y, uint8_t *_coverage, int32_t _xStart, int32_t _xEnd);
+  uint8_t blendCoverage(uint8_t _background, uint8_t _foreground, uint8_t _coverage);
+  uint8_t getPixel(int16_t _x, int16_t _y);
+  void addCoverage(uint8_t *_coverage, uint16_t _value);
+  int32_t fontUnitsToPixels(int32_t _value);
 
-    //write user framebuffer
-    uint16_t characterSize = 20;
-    uint8_t kerningOn = 1;
-    int16_t characterSpace = 0;
-    int16_t start_x = 10;
-    int16_t end_x = 300;
-    int16_t end_y = 300;
-    uint16_t displayWidth = 400;
-    uint16_t displayHeight = 400;
-    uint16_t displayWidthFrame = 400;
-    uint16_t framebufferBit = 8;
-    uint8_t framebufferDirection = 0;
-    uint8_t stringRotation = 0x00;
-    uint8_t colorLine = 0x00;
-    uint8_t colorInside = 0x00;
-    uint8_t *userFrameBuffer;
-    void addPixel(int16_t _x, int16_t _y, uint8_t _colorCode);
-    void stringToWchar(String _string, wchar_t _charctor[]);
+  static const uint16_t TT_CACHE_SIZE = 64;
+  uint8_t cacheBuffer[TT_CACHE_SIZE];
+  uint32_t cacheBase = 0;
+  uint16_t cacheLength = 0;
+  bool cacheValid = false;
+  uint32_t filePosition = 0;
+  void seekFile(uint32_t _offset);
+  uint32_t tellFile() const;
+  void readFile(uint8_t *_destination, uint16_t _length);
 
-    uint8_t GetU8ByteCount(char _ch);
-    bool IsU8LaterByte(char _ch);
+  // write user framebuffer
+  uint16_t characterSize = 20;
+  uint8_t kerningOn = 1;
+  int16_t characterSpace = 0;
+  int16_t start_x = 10;
+  int16_t end_x = 300;
+  int16_t end_y = 300;
+  uint16_t displayWidth = 400;
+  uint16_t displayHeight = 400;
+  uint16_t displayWidthFrame = 400;
+  uint16_t framebufferBit = 8;
+  uint8_t framebufferDirection = 0;
+  uint8_t stringRotation = 0x00;
+  uint8_t colorLine = 0x00;
+  uint8_t colorInside = 0x00;
+  uint8_t fillInside = 1;
+  uint8_t *userFrameBuffer;
+  void addPixel(int16_t _x, int16_t _y, uint8_t _colorCode);
+  void stringToWchar(String _string, wchar_t _charctor[]);
+
+  uint8_t GetU8ByteCount(char _ch);
+  bool IsU8LaterByte(char _ch);
 };
+
+#ifdef ENABLE_INTEGRATED_TTF
+extern const uint8_t integrated_ttf[];
+extern const uint32_t integrated_ttf_size;
+#endif
